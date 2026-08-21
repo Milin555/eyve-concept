@@ -1807,27 +1807,30 @@ table { border-collapse: collapse; width: 100%; }
   display: grid;
   /* Copy sits on the shell datum; the photograph claims the right 48% and
      runs to the viewport edge. Height is set so neither band goes slack. */
-  grid-template-columns: minmax(0, 44rem) 1fr;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: clamp(2rem, 4vw, 3.5rem);
   align-items: center;
-  height: min(76vh, 800px);
+  height: clamp(580px, 66vh, 700px);
   padding-left: max(0px, calc((100% - var(--maxw)) / 2));
 }
 .lede-hero__copy {
   padding-inline: var(--gutter);
   padding-bottom: 2vh;
-  max-width: 40rem;
+  max-width: 62rem;
   margin-left: 0;
-  margin-right: var(--s-3);
+  margin-right: 0;
 }
 .lede-hero__h1 {
-  font-size: clamp(3rem, 6.1vw, 5.1rem);
+  font-size: clamp(3rem, 7.7vw, 7rem);
   line-height: 0.96;
   letter-spacing: -0.015em;
   margin-top: 0.85rem;
+  max-width: 11ch;
+  text-wrap: balance;
 }
 .lede-hero__sub {
-  margin-top: 1.5rem;
-  font-size: clamp(1.05rem, 1.35vw, 1.22rem);
+  margin-top: 1.6rem;
+  font-size: clamp(1.05rem, 1.35vw, 1.25rem);
   line-height: 1.45;
   color: var(--ink-soft);
   max-width: 34ch;
@@ -1835,11 +1838,13 @@ table { border-collapse: collapse; width: 100%; }
 .lede-hero__cta { margin-top: 2.1rem; display: flex; gap: var(--s-3); align-items: center; flex-wrap: wrap; }
 .lede-hero__fig {
   height: 100%;
-  min-width: 100%;
+  /* A shade wider than the photograph's own 1122:1402 so the only thing
+     trimmed is the plinth at the foot. Nothing comes off the top. */
+  aspect-ratio: 1122 / 1330;
   overflow: hidden;
   background: var(--mist);
 }
-.lede-hero__fig img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 44%; }
+.lede-hero__fig img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; }
 
 /* 2 — Range heading sits on one line with its link */
 .shead--row {
@@ -1926,7 +1931,7 @@ table { border-collapse: collapse; width: 100%; }
 @media (max-width: 900px) {
   .lede-hero__grid { grid-template-columns: 1fr; height: auto; padding-left: 0; }
   .lede-hero__copy { max-width: none; margin-inline: 0; padding-block: var(--s-5) var(--s-4); }
-  .lede-hero__fig { height: auto; aspect-ratio: 4 / 5; max-width: none; }
+  .lede-hero__fig { height: auto; aspect-ratio: 4 / 5; max-width: none; width: 100%; }
   .lede-hero__fig img { object-position: 50% 50%; }
   .band { height: 56vh; }
 }
@@ -1961,7 +1966,7 @@ table { border-collapse: collapse; width: 100%; }
 
 /* Ultrawide: widen the copy measure so the photo slot cannot outgrow its ratio */
 @media (min-width: 1700px) {
-  .lede-hero__grid { grid-template-columns: minmax(0, 56rem) 1fr; height: min(76vh, 900px); }
-  .lede-hero__copy { max-width: 48rem; }
-  .lede-hero__h1 { font-size: 5.6rem; }
+  .lede-hero__grid { height: min(66vh, 780px); }
+  .lede-hero__copy { max-width: 74rem; }
+  .lede-hero__h1 { font-size: clamp(7rem, 6.6vw, 11rem); }
 }
