@@ -47,6 +47,26 @@
     return (s === 0 || s >= FREE_SHIP) ? 0 : SHIP;
   };
 
+  /* --- Brand intro ------------------------------------------------------ */
+  var intro = $('#intro');
+  if (intro) {
+    var seen = false;
+    try { seen = sessionStorage.getItem('eyveSeen') === '1'; } catch (e) {}
+    if (seen || reduce) {
+      intro.classList.add('is-done');
+    } else {
+      document.documentElement.style.overflow = 'hidden';
+      intro.classList.add('is-run');
+      // 450ms in, 450ms hold, 600ms curtain — the hold is what reads as composed
+      setTimeout(function () { intro.classList.add('is-out'); }, 900);
+      setTimeout(function () {
+        intro.classList.add('is-done');
+        document.documentElement.style.overflow = '';
+        try { sessionStorage.setItem('eyveSeen', '1'); } catch (e) {}
+      }, 1500);
+    }
+  }
+
   /* --- Header ----------------------------------------------------------- */
   var hdr = $('#hdr');
   if (hdr) {
@@ -407,7 +427,7 @@
       btn.addEventListener('click', function () {
         var src = btn.getAttribute('data-full');
         var img = $('img', btn);
-        if (src) { galMain.src = src; galMain.alt = img ? img.alt : ''; }
+        if (src) { galMain.removeAttribute('srcset'); galMain.removeAttribute('sizes'); galMain.src = src; galMain.alt = img ? img.alt : ''; }
         thumbs.forEach(function (b) {
           var on = b === btn;
           b.classList.toggle('is-sel', on);
