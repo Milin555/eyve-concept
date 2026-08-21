@@ -72,9 +72,9 @@
   --s-5: 3.5rem;
   --s-6: 5.5rem;
   --s-7: 8rem;
-  --s-section:    clamp(3.5rem, 7vw, 7rem);
-  --s-section-lg: clamp(5rem, 10.5vw, 10.5rem);
-  --s-section-sm: clamp(2.5rem, 4.5vw, 4.5rem);
+  --s-section:    clamp(4.5rem, 9vw, 9rem);
+  --s-section-lg: clamp(6rem, 12vw, 12rem);
+  --s-section-sm: clamp(3.5rem, 7vw, 7rem);
 
   /* Shell */
   --rail: 110px;
@@ -345,7 +345,7 @@ table { border-collapse: collapse; width: 100%; }
 .hero {
   position: relative;
   padding-top: calc(var(--rail) + var(--s-5));
-  padding-bottom: var(--s-6);
+  padding-bottom: var(--s-7);
   overflow: hidden;
   background:
     radial-gradient(120% 90% at 78% 8%, var(--indigo-wash) 0%, transparent 58%),
@@ -642,14 +642,15 @@ table { border-collapse: collapse; width: 100%; }
 /* --- Products ----------------------------------------------------------- */
 .prods { background: var(--mist); }
 .prods__grid {
-  margin-top: var(--s-5);
+  margin-top: var(--s-6);
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  column-gap: clamp(1.75rem, 3vw, 3rem);
-  row-gap: 5rem;
+  grid-template-columns: repeat(5, 1fr);
+  column-gap: clamp(1rem, 1.6vw, 1.6rem);
+  row-gap: 4.5rem;
 }
 .prods__grid--3 { grid-template-columns: repeat(3, 1fr); }
 
+@media (max-width: 1180px) { .prods__grid { grid-template-columns: repeat(3, 1fr); column-gap: clamp(1.5rem, 2.6vw, 2.5rem); } }
 @media (max-width: 820px)  { .prods__grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 520px)  { .prods__grid { grid-template-columns: 1fr; row-gap: var(--s-5); } }
 
@@ -662,13 +663,14 @@ table { border-collapse: collapse; width: 100%; }
   aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: 2px;
+  background: var(--white);
 }
 .pcard__fig img {
   width: 100%; height: 100%;
   object-fit: cover;
   transition: transform 800ms var(--ease-out);
 }
-.pcard__link:hover .pcard__fig img { transform: scale(1.035); }
+.pcard__link:hover .pcard__fig img { transform: scale(1.045); }
 
 .pcard__step {
   position: absolute; z-index: 2;
@@ -701,8 +703,8 @@ table { border-collapse: collapse; width: 100%; }
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  font-size: 1.06rem;
-  line-height: 1.22;
+  font-size: 0.98rem;
+  line-height: 1.25;
   margin-top: 0.55rem;
   text-wrap: pretty;
   transition: color var(--dur-fast) var(--ease);
@@ -710,15 +712,15 @@ table { border-collapse: collapse; width: 100%; }
 .pcard__link:hover .pcard__name { color: var(--indigo); }
 .pcard__desc {
   display: block;
-  font-size: var(--t-small);
+  font-size: 0.82rem;
   color: var(--ink-mute);
-  margin-top: 0.75rem;
+  margin-top: 0.7rem;
   line-height: 1.5;
   flex: 1;}
 
 .pcard__foot {
-  margin-top: 1.15rem;
-  padding-top: 0.9rem;
+  margin-top: 1.1rem;
+  padding-top: 0.85rem;
   border-top: 1px solid var(--line);
   display: flex;
   align-items: center;
@@ -736,10 +738,10 @@ table { border-collapse: collapse; width: 100%; }
 .pcard__size { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-mute); }
 .pcard__add {
   font-family: var(--mono);
-  font-size: var(--t-label);
-  letter-spacing: 0.14em;
+  font-size: 0.63rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 0.6rem 1.05rem;
+  padding: 0.55rem 0.9rem;
   border: 1px solid var(--ink);
   border-radius: 999px;
   background: transparent;
@@ -885,7 +887,7 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 .revs__grid {
-  margin-top: var(--s-4);
+  margin-top: var(--s-5);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   column-gap: clamp(1.25rem, 2.4vw, 2.25rem);
@@ -1165,7 +1167,7 @@ table { border-collapse: collapse; width: 100%; }
 .gal__main {
   aspect-ratio: 4/5;
   overflow: hidden;
-  background: linear-gradient(165deg, var(--white), var(--mist));
+  background: var(--white);
   border-radius: 3px;
 }
 .gal__main img { width: 100%; height: 100%; object-fit: cover; }
@@ -1440,11 +1442,6 @@ table { border-collapse: collapse; width: 100%; }
 .ftr__pay { letter-spacing: 0.1em; }
 
 /* One ground per formulation, so the range reads art-directed */
-.pcard__fig.tint-mist, .gal__main.tint-mist, .proto__row-fig.tint-mist { background: linear-gradient(165deg, var(--white), var(--mist)); }
-.pcard__fig.tint-sand, .gal__main.tint-sand, .proto__row-fig.tint-sand { background: linear-gradient(165deg, #FBF6EF, var(--sand-pale)); }
-.pcard__fig.tint-blue, .gal__main.tint-blue, .proto__row-fig.tint-blue { background: linear-gradient(165deg, #F7FAFC, #DCE6EE); }
-.pcard__fig.tint-gold, .gal__main.tint-gold, .proto__row-fig.tint-gold { background: linear-gradient(165deg, #FDFAF3, #F0E4CB); }
-.pcard__fig.tint-rose, .gal__main.tint-rose, .proto__row-fig.tint-rose { background: linear-gradient(165deg, #FCF7F8, #EEDEE3); }
 
 .stars { color: #A8834A; letter-spacing: 0.12em; font-size: var(--t-small); display: inline-block; }
 .pdp__solves {
