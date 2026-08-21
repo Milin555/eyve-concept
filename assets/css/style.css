@@ -1514,7 +1514,7 @@ table { border-collapse: collapse; width: 100%; }
 
 /* --- Cart and checkout -------------------------------------------------- */
 .cart__grid { display: grid; grid-template-columns: 1fr 22rem; gap: clamp(1.5rem, 4vw, 3.5rem); align-items: start; }
-.cart__lines { border-top: 1px solid var(--line); }
+.cart__lines { border-top: 1px solid var(--line); min-height: 9rem; }
 .line {
   display: grid; grid-template-columns: 5rem 1fr auto;
   gap: var(--s-3); align-items: start;
@@ -1604,7 +1604,9 @@ table { border-collapse: collapse; width: 100%; }
 }
 .pay__opt:has(input:checked) { border-color: var(--indigo); background: var(--indigo-wash); }
 
-.co__lines { margin-bottom: var(--s-2); }
+.co__lines { margin-bottom: var(--s-2); min-height: 5.5rem; }
+.cart__lines { min-height: 9rem; }
+.cart__sum { min-height: 8.5rem; }
 .co__lines .line { grid-template-columns: 3.4rem 1fr auto; padding: 0.8rem 0; }
 .co__lines .line__name { font-size: var(--t-s); }
 .co__secure, .co__terms {
