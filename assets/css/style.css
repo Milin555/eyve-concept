@@ -1793,9 +1793,12 @@ table { border-collapse: collapse; width: 100%; }
 
 /* 1 — Hero: 46/54 split ledger, image bleeds right and bottom */
 .lede-hero { padding-top: var(--rail); overflow: hidden; }
+
 .lede-hero__grid {
   display: grid;
-  grid-template-columns: 46fr 54fr;
+  /* Image is capped at the width its resolution supports; the copy column
+     absorbs anything wider, so the photograph still bleeds to the edge. */
+  grid-template-columns: 1fr min(50%, 880px);
   align-items: center;
   height: min(82vh, 780px);
 }
