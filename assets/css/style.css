@@ -1595,7 +1595,7 @@ table { border-collapse: collapse; width: 100%; }
   transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
 .pay__opt:hover { border-color: var(--indigo-lift); }
-.pay__opt input { margin-top: 0.28rem; accent-color: var(--indigo); flex: none; }
+.pay__opt input { width: 1.15rem; height: 1.15rem; margin-top: 0.2rem; accent-color: var(--indigo); flex: none; }
 .pay__opt span { font-size: var(--t-s); color: var(--ink-soft); line-height: 1.45; }
 .pay__opt b {
   display: block; font-family: var(--mono); font-size: var(--t-label);
@@ -1902,4 +1902,21 @@ table { border-collapse: collapse; width: 100%; }
   .lede-hero__copy { max-width: none; margin-inline: 0; padding-block: var(--s-5) var(--s-4); }
   .lede-hero__fig { height: 62vh; }
   .band { height: 56vh; }
+}
+
+/* --- Touch targets ------------------------------------------------------ */
+/* Text links sit at their type height on a mouse, which is fine. On a finger
+   they need 44px. Scoped to coarse pointers so desktop spacing is untouched. */
+@media (pointer: coarse) {
+  .tlink { padding-block: 0.7rem; }
+  .hdr__logo { padding-block: 0.55rem; display: inline-flex; }
+  .ftr li a, .ftr__soon, .ftr__addr a { display: inline-block; padding-block: 0.55rem; }
+  .ftr li + li { margin-top: 0.1rem; }
+  .ftr__grievance a { display: inline-block; padding-block: 0.4rem; }
+  .crumbs a { padding-block: 0.62rem; display: inline-block; }
+  .crumbs { align-items: center; }
+  .contact__list a { display: inline-block; padding-block: 0.45rem; }
+  .conf__meta a { display: inline-block; padding-block: 0.45rem; }
+  .line__rm { padding-block: 0.6rem; }
+  .faq__more a, .prods__more a { padding-block: 0.7rem; }
 }
