@@ -424,7 +424,7 @@
       csRail.innerHTML = offer.map(function (k) {
         var p = CAT[k];
         return '<article class="xsell">' +
-          '<a class="xsell__fig" href="' + p.url + '"><img src="assets/opt/' + p.img + '-sm.webp" alt="" width="600" height="750" loading="lazy" decoding="async"></a>' +
+          '<a class="xsell__fig" href="' + p.url + '" tabindex="-1" aria-hidden="true"><img src="assets/opt/' + p.img + '-sm.webp" alt="" width="600" height="750" loading="lazy" decoding="async"></a>' +
           '<div class="xsell__body"><h3><a href="' + p.url + '">' + p.name + '</a></h3>' +
           '<p class="xsell__meta">' + p.size + ' \u00b7 ' + inr(p.price) + '</p></div>' +
           '<button class="btn btn--ghost btn--sm" type="button" data-add="' + k + '">Add</button>' +
@@ -448,7 +448,7 @@
           '<button class="line__rm" type="button" data-line-rm="' + k + '" aria-label="Remove ' + p.name + ' from bag">Remove</button>';
       var was = p.rrp ? '<span class="line__was">' + inr(p.rrp) + '</span>' : '';
       return '<article class="line">' +
-        '<a class="line__fig" href="' + p.url + '"><img src="assets/opt/' + p.img + '-sm.webp" alt="" width="600" height="750" loading="lazy" decoding="async"></a>' +
+        '<a class="line__fig" href="' + p.url + '" tabindex="-1" aria-hidden="true"><img src="assets/opt/' + p.img + '-sm.webp" alt="" width="600" height="750" loading="lazy" decoding="async"></a>' +
         '<div class="line__body"><h3 class="line__name"><a href="' + p.url + '">' + p.name + '</a></h3>' +
         '<p class="line__size">' + p.size + '</p>' +
         '<div class="line__ctl">' + controls + '</div></div>' +

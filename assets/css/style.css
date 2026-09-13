@@ -1886,9 +1886,11 @@ table { border-collapse: collapse; width: 100%; }
 }
 .reels__head .eyebrow { color: var(--sand); }
 .reels__head h2 { color: var(--on-dark); }
-.reels__hint {
+/* .shead p is more specific, so this needs the section to win it back. */
+.reels .reels__hint {
   font-family: var(--mono); font-size: var(--t-micro); letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--on-dark-3); white-space: nowrap;
+  text-transform: uppercase; color: var(--on-dark-2); white-space: nowrap;
+  margin-top: 0;
 }
 @media (max-width: 760px) {
   .reels__head { flex-wrap: wrap; gap: var(--s-2); }
@@ -2213,7 +2215,7 @@ html.is-locked { overflow: hidden; }
   font-size: clamp(1.6rem, 3vw, 2.4rem); letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
 }
-.timing__l { font-family: var(--mono); font-size: var(--t-label); letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-mute); }
+.timing__l { font-family: var(--mono); font-size: var(--t-label); letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-soft); }
 .timing__note { flex: 1 1 16rem; font-size: var(--t-s); color: var(--ink-soft); line-height: 1.6; }
 
 /* The brand's own artwork, reproduced as source material — not as design. */
@@ -2240,7 +2242,8 @@ html.is-locked { overflow: hidden; }
 /* A single reel, dropped into a product page. */
 .reelcard { display: grid; grid-template-columns: minmax(0, 240px) 1fr; gap: clamp(1.5rem, 4vw, 3.5rem); align-items: center; }
 .reelcard .reel { flex: none; width: 100%; }
-.reelcard__copy p { max-width: var(--m-tight); }
+.reelcard__copy p { max-width: var(--m-read); }
+.reelcard__copy .h2, .reelcard__copy h2 { max-width: 18ch; }
 @media (max-width: 700px) { .reelcard { grid-template-columns: 1fr; } .reelcard .reel { max-width: 240px; } }
 
 /* --- Page transitions --------------------------------------------------- */
