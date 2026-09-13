@@ -14,7 +14,7 @@ window.EYVE_CATALOGUE = {
     "url": "serum.html"
   },
   "moisturiser": {
-    "name": "Neo-Liposomal Moisturiser",
+    "name": "Lipomist Moisturiser",
     "price": 1124,
     "img": "prod-moisturizer",
     "size": "50 g",

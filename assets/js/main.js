@@ -22,22 +22,25 @@
     catch (e) { return null; }
   })();
 
-  var bag = (function () {
+  /* Storage is the buyer's to edit, and a second tab's to change underneath
+     us. Everything that reads it goes through here: quantities are clamped to
+     what the shop will actually sell, unknown slugs are dropped, and a bag
+     that needed correcting is written back so it stops being wrong. */
+  var readBag = function () {
     if (!store) return {};
     var raw;
     try { raw = JSON.parse(store.getItem('eyveBag') || '{}'); } catch (e) { return {}; }
-    /* Storage is the buyer's to edit. A negative quantity renders a negative
-       subtotal and a bag badge of minus two, so nothing gets past this. */
-    var out = {};
-    var dirty = false;
+    var out = {}, dirty = false;
     for (var k in raw) {
-      var n = Math.max(0, Math.min(9, parseInt(raw[k], 10) || 0));
-      if (n && CAT[k]) out[k] = n;
-      if (String(n) !== String(raw[k]) || !CAT[k]) dirty = true;
+      var q = Math.max(0, Math.min(9, parseInt(raw[k], 10) || 0));
+      if (q && CAT[k]) out[k] = q; else dirty = true;
+      if (CAT[k] && String(q) !== String(raw[k])) dirty = true;
     }
     if (dirty) { try { store.setItem('eyveBag', JSON.stringify(out)); } catch (e) {} }
     return out;
-  })();
+  };
+
+  var bag = readBag();
 
   var saveBag = function () {
     if (store) store.setItem('eyveBag', JSON.stringify(bag));
@@ -442,8 +445,11 @@
       e.preventDefault();
       var v = (input.value || '').trim();
       var r = lookupPin(v);
-      if (r) { lastPin = v; try { if (store) store.setItem('eyvePin', v); } catch (x) {} }
+      if (r) { lastPin = v; pinUnknown = false; try { if (store) store.setItem('eyvePin', v); } catch (x) {} }
+      else { pinUnknown = true; lastPin = ''; try { if (store) store.removeItem('eyvePin'); } catch (x) {} }
       render(r, true);
+      /* The bag's own summary quotes this route. It has to hear about it. */
+      paintCart();
     });
   });
 
@@ -498,11 +504,18 @@
     $$('[data-cod-cap]').forEach(function (e) {
       e.hidden = !codBlocked;
       if (!codBlocked) return;
-      e.textContent = offRoute
-        ? 'Cash on delivery is not available on the route to ' + lastPin +
-          '. This order needs to be prepaid.'
-        : 'Cash on delivery is capped at ' + inr(COD_CAP) + ' collected, and this order ' +
+      if (overCap) {
+        e.textContent = 'Cash on delivery is capped at ' + inr(COD_CAP) + ' collected, and this order ' +
           'comes to ' + inr(codTotal) + ' with the handling fee and shipping. It needs to be prepaid.';
+      } else if (pinUnknown) {
+        /* They mistyped. That is not the same as reaching a route we cannot
+           serve, and telling them it is would be a lie about their address. */
+        e.textContent = 'We do not recognise that PIN code, so we cannot say whether cash on ' +
+          'delivery runs there. Correct it and the option comes back.';
+      } else {
+        e.textContent = 'Cash on delivery is not available on the route to ' + lastPin +
+          '. This order needs to be prepaid.';
+      }
     });
 
     /* The free-shipping gap is only worth showing if it can be acted on. */
@@ -564,24 +577,34 @@
         if (!b.bundle) return;
         var has = b.parts && b.parts.every(function (part) { return bag[part] > 0; });
         if (!has) return;
+        /* However many complete sets are sitting in the bag, offer all of
+           them. Swapping one of two identical routines and calling it done
+           leaves the buyer paying full price for the second. */
+        var sets = Math.min(9, Math.min.apply(null, b.parts.map(function (part) { return bag[part]; })));
+        if (b.parts.some(function (part) { return (bag[part] || 0) < sets; })) return;
         var after = {};
         Object.keys(bag).forEach(function (x) { after[x] = bag[x]; });
         b.parts.forEach(function (part) {
-          after[part] -= 1;
+          after[part] -= sets;
           if (after[part] <= 0) delete after[part];
         });
-        after[k] = (after[k] || 0) + 1;
+        after[k] = Math.min(9, (after[k] || 0) + sets);
         var save = nowDue - payableOf(after);
-        if (save > 0 && (!match || save > match.save)) match = { slug: k, b: b, save: save };
+        if (save > 0 && (!match || save > match.save)) match = { slug: k, b: b, save: save, sets: sets };
       });
       upsell.hidden = !match;
       if (match) {
+        var word = match.b.parts.length === 3 ? 'three' : 'five';
+        var many = match.sets > 1;
         upsell.innerHTML =
-          '<p class="upsell__h">Those ' + (match.b.parts.length === 3 ? 'three' : 'five') +
-          ' are a routine.</p>' +
+          '<p class="upsell__h">' + (many
+            ? 'That is ' + match.sets + ' complete routines.'
+            : 'Those ' + word + ' are a routine.') + '</p>' +
           '<p class="upsell__p">' + match.b.name + ' holds the same ' + match.b.parts.length +
-          ' products for ' + inr(match.b.price) + ' \u2014 <b>' + inr(match.save) + ' less</b> than buying them separately.</p>' +
-          '<button class="btn btn--sm" type="button" data-swap-bundle="' + match.slug + '">' +
+          ' products for ' + inr(match.b.price) + (many ? ' each' : '') +
+          ' \u2014 <b>' + inr(match.save) + ' less</b> than buying them separately.</p>' +
+          '<button class="btn btn--sm" type="button" data-swap-bundle="' + match.slug +
+          '" data-swap-sets="' + match.sets + '">' +
           'Swap to the routine, save ' + inr(match.save) + '</button>';
       }
     }
@@ -593,7 +616,7 @@
       csRail.innerHTML = offer.map(function (k) {
         var p = CAT[k];
         return '<article class="xsell">' +
-          '<a class="xsell__fig" href="' + p.url + '" tabindex="-1" aria-hidden="true"><img src="assets/opt/' + p.img + '-sm.webp" alt="" width="600" height="750" loading="lazy" decoding="async"></a>' +
+          '<a class="xsell__fig" href="' + p.url + '" tabindex="-1" aria-hidden="true"><img src="assets/opt/' + p.img + '-tn.webp" alt="" width="220" height="275" loading="lazy" decoding="async"></a>' +
           '<div class="xsell__body"><h3><a href="' + p.url + '">' + p.name + '</a></h3>' +
           '<p class="xsell__meta">' + p.size + ' \u00b7 ' + inr(p.price) + '</p></div>' +
           '<button class="btn btn--ghost btn--sm" type="button" data-add="' + k + '">Add</button>' +
@@ -621,7 +644,7 @@
           '<button class="line__rm" type="button" data-line-rm="' + k + '" aria-label="Remove ' + p.name + ' from bag">Remove</button>';
       var was = p.rrp ? '<span class="line__was">' + inr(p.rrp * n) + '</span>' : '';
       return '<article class="line">' +
-        '<a class="line__fig" href="' + p.url + '" tabindex="-1" aria-hidden="true"><img src="assets/opt/' + p.img + '-sm.webp" alt="" width="600" height="750" loading="lazy" decoding="async"></a>' +
+        '<a class="line__fig" href="' + p.url + '" tabindex="-1" aria-hidden="true"><img src="assets/opt/' + p.img + '-tn.webp" alt="" width="220" height="275" loading="lazy" decoding="async"></a>' +
         '<div class="line__body"><h3 class="line__name"><a href="' + p.url + '">' + p.name + '</a></h3>' +
         '<p class="line__size">' + p.size + '</p>' +
         '<div class="line__ctl">' + controls + '</div></div>' +
@@ -658,12 +681,16 @@
     var swap = e.target.closest('[data-swap-bundle]');
     if (swap) {
       var slug = swap.getAttribute('data-swap-bundle');
+      var sets = Math.max(1, parseInt(swap.getAttribute('data-swap-sets'), 10) || 1);
       var before = JSON.parse(JSON.stringify(bag));
       CAT[slug].parts.forEach(function (part) {
-        bag[part] -= 1;
+        bag[part] -= sets;
         if (bag[part] <= 0) delete bag[part];
       });
-      bag[slug] = (bag[slug] || 0) + 1;
+      /* The same ceiling addToBag enforces. Without it a swap could push a
+         routine to ten, and the clamp on the next read would delete one
+         without saying so. */
+      bag[slug] = Math.min(9, (bag[slug] || 0) + sets);
       saveBag(); paintHeader(); paintCart(); bump();
       say('Swapped to ' + CAT[slug].name, { label: 'Undo', act: function () {
         bag = before; saveBag(); paintHeader(); paintCart(); say('Put back as separate products');
@@ -737,6 +764,12 @@
     };
     var paintApplied = function () {
       if (!promo) { render('', true); if (input) input.value = ''; return; }
+      if (!bagCount()) {
+        render('<b>' + promo + '</b> is saved, and applies as soon as there is something to apply it to.' +
+               ' <button class="promo__clear" type="button" data-promo-clear>Remove</button>', true);
+        if (input) input.value = promo;
+        return;
+      }
       var d = discount();
       if (!d) {
         render('<b>' + promo + '</b> applies to single products only \u2014 your bag is all routines, ' +
@@ -813,7 +846,7 @@
           store.setItem('eyveReceipt', JSON.stringify({
             at: Date.now(),
             lines: Object.keys(bag).filter(function (k) { return bag[k] > 0 && CAT[k]; })
-                     .map(function (k) { return { k: k, n: bag[k] }; }),
+                     .map(function (k) { return { k: k, n: bag[k], p: CAT[k].price, nm: CAT[k].name }; }),
             promo: promo, disc: discount(), sub: subtotal(),
             ship: shipping(), cod: (codOn() ? COD : 0), pin: lastPin,
             pay: (($('input[name="pay"]:checked') || {}).value || 'upi')
@@ -847,7 +880,7 @@
     /* A receipt survives a refresh, not a week. Coming back later should not
        re-render an old order as though it had just been placed. */
     var FRESH = 6 * 60 * 60 * 1000;
-    if (r && r.at && Date.now() - r.at > FRESH) {
+    if (r && (!r.at || Date.now() - r.at > FRESH)) {
       try { store.removeItem('eyveReceipt'); store.removeItem('eyveOrder'); } catch (e) {}
       r = null;
     }
@@ -856,9 +889,13 @@
       receiptEl.innerHTML =
         '<h2 class="h3">What you ordered</h2>' +
         '<div class="receipt__lines">' + r.lines.map(function (l) {
-          var p = CAT[l.k]; if (!p) return '';
-          return '<div class="receipt__line"><span>' + p.name +
-                 (l.n > 1 ? ' \u00d7 ' + l.n : '') + '</span><span>' + inr(p.price * l.n) + '</span></div>';
+          /* Priced as it was at purchase, not as it is now — a receipt that
+             stops adding up because the shop changed a price is not a receipt. */
+          var nm = l.nm || (CAT[l.k] && CAT[l.k].name);
+          var price = (typeof l.p === 'number' ? l.p : (CAT[l.k] && CAT[l.k].price));
+          if (!nm || typeof price !== 'number') return '';
+          return '<div class="receipt__line"><span>' + nm +
+                 (l.n > 1 ? ' \u00d7 ' + l.n : '') + '</span><span>' + inr(price * l.n) + '</span></div>';
         }).join('') + '</div>' +
         '<dl class="cart__sum">' +
           '<div><dt>Subtotal</dt><dd>' + inr(r.sub) + '</dd></div>' +
@@ -882,11 +919,16 @@
     var o = store && store.getItem('eyveOrder');
     if (o) {
       ordNo.textContent = o;
-      /* Arriving here means the order left the bag. Reaching this page with
-         items still in it — by a back button, a reload, a shared link —
-         should not leave a badge claiming they are still waiting. */
-      if (bagCount()) { bag = {}; saveBag(); }
-      promo = ''; savePromo();
+      /* Arriving here means this order left the bag — but only this order.
+         Clearing on every visit emptied a bag the buyer had rebuilt since,
+         which is somebody else's shopping thrown away without a word. */
+      var settled = false;
+      try { settled = store && store.getItem('eyveSettled') === o; } catch (e) {}
+      if (!settled) {
+        if (bagCount()) { bag = {}; saveBag(); }
+        promo = ''; savePromo();
+        try { if (store) store.setItem('eyveSettled', o); } catch (e) {}
+      }
     } else {
       window.location.replace('index.html');
     }
@@ -894,16 +936,26 @@
   }
 
   /* --- Restored and duplicated views --------------------------------------
-     A page restored from the back-forward cache keeps whatever was on screen
-     when it was frozen — an address form for a bag that has since been
-     emptied, a live pay button for nothing. And a second tab writing to
-     storage leaves this one showing a total that no longer exists. */
-  window.addEventListener('pageshow', function (e) {
-    if (e.persisted) window.location.reload();
-  });
+     A page restored from the back-forward cache, or left open while a second
+     tab changes the bag, is showing a total that may no longer be true.
+
+     The first version of this reloaded the page. That was the wrong primitive:
+     the back-forward cache exists to preserve what the buyer had typed, and
+     reloading threw it away — pressing Back from the refund policy linked in
+     the payment panel blanked a filled-in address. Re-read the state and
+     repaint the parts that render it. Nothing that holds typing is touched. */
+  var reread = function () {
+    bag = readBag();
+    try { promo = store ? (store.getItem('eyvePromo') || '') : ''; } catch (e) {}
+    try { lastPin = store ? (store.getItem('eyvePin') || '') : ''; } catch (e) {}
+    paintHeader();
+    if (typeof paintCart === 'function') paintCart();
+  };
+
+  window.addEventListener('pageshow', function (e) { if (e.persisted) reread(); });
   window.addEventListener('storage', function (e) {
     if (e.key && e.key.indexOf('eyve') !== 0) return;
-    window.location.reload();
+    reread();
   });
 
   /* --- Forms ------------------------------------------------------------ */
