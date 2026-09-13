@@ -16,9 +16,8 @@
 <meta property="og:image" content="https://eyve.in/assets/opt/life-serum-box.webp">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/opt/logo.webp">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@200;300;400;500&family=Newsreader:ital,opsz,wght@0,6..72,200..500;1,6..72,200..400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="font" type="font/woff2" href="assets/font/archivo.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/font/newsreader.woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/style.css">
 <script type="application/ld+json">{
   "@context": "https://schema.org",
@@ -150,7 +149,6 @@
         <div id="cartLines" class="cart__lines"></div>
 
         <div id="cartExtras" hidden>
-          <button class="pcard__add" type="button" data-ship-fill hidden></button>
 
           <div class="pincheck">
             <form class="pincheck__row" data-pin-form novalidate>
@@ -186,12 +184,12 @@
           </form>
           <p class="promo__out" data-promo-out role="status"></p>
         </div>
-        <p class="co__note"><b>Paying cash on delivery?</b> A ₹49 handling fee is added at checkout, and COD is capped at ₹5,000 per order. Prepaid orders pay neither.</p>
+        <p class="co__note" data-cod-terms><b>Paying cash on delivery?</b> A ₹49 handling fee is added at checkout, and COD is capped at ₹5,000 collected. Prepaid orders pay neither.</p>
         <a class="btn btn--block" href="checkout.html" data-checkout>Proceed to checkout</a>
         <ul class="pdp__assure">
           <li><b>Free shipping</b> from ₹999</li>
           <li><b>14-day returns</b> on unopened products</li>
-          <li><b>Cash on delivery</b> on most routes, up to ₹5,000 collected</li>
+          <li><b>Cash on delivery</b> on most routes &mdash; a &#8377;49 handling fee, a &#8377;5,000 ceiling, both shown in the bag before you pay</li>
         </ul>
       </aside>
     </div>

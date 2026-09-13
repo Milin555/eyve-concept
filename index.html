@@ -16,9 +16,11 @@
 <meta property="og:image" content="https://eyve.in/assets/opt/life-serum-box.webp">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/opt/logo.webp">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@200;300;400;500&family=Newsreader:ital,opsz,wght@0,6..72,200..500;1,6..72,200..400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/opt/life-serum-box-lg.webp"
+      imagesrcset="assets/opt/life-serum-box-sm.webp 640w, assets/opt/life-serum-box-lg.webp 1122w, assets/opt/life-serum-box-xl.webp 1400w"
+      imagesizes="(max-width: 1000px) 100vw, 48vw" fetchpriority="high">
+<link rel="preload" as="font" type="font/woff2" href="assets/font/archivo.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/font/newsreader.woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/style.css">
 <script type="application/ld+json">{
   "@context": "https://schema.org",
@@ -119,7 +121,7 @@
         </div>
       </div>
       <figure class="lede-hero__fig rvimg">
-        <img src="assets/opt/life-serum-box-sm.webp" srcset="assets/opt/life-serum-box-sm.webp 640w, assets/opt/life-serum-box-lg.webp 1122w, assets/opt/life-serum-box-xl.webp 1700w" sizes="(max-width: 900px) 100vw, 50vw" alt="EYVE Lipobright Pro serum and carton on a travertine ledge" width="1122" height="1402" fetchpriority="high">
+        <img src="assets/opt/life-serum-box-sm.webp" srcset="assets/opt/life-serum-box-sm.webp 640w, assets/opt/life-serum-box-lg.webp 1122w, assets/opt/life-serum-box-xl.webp 1400w" sizes="(max-width: 1000px) 100vw, 48vw" alt="EYVE Lipobright Pro serum and carton on a travertine ledge" width="1122" height="1402" fetchpriority="high" decoding="sync">
       </figure>
     </div>
   </section>

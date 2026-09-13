@@ -24,7 +24,19 @@
 
   var bag = (function () {
     if (!store) return {};
-    try { return JSON.parse(store.getItem('eyveBag') || '{}'); } catch (e) { return {}; }
+    var raw;
+    try { raw = JSON.parse(store.getItem('eyveBag') || '{}'); } catch (e) { return {}; }
+    /* Storage is the buyer's to edit. A negative quantity renders a negative
+       subtotal and a bag badge of minus two, so nothing gets past this. */
+    var out = {};
+    var dirty = false;
+    for (var k in raw) {
+      var n = Math.max(0, Math.min(9, parseInt(raw[k], 10) || 0));
+      if (n && CAT[k]) out[k] = n;
+      if (String(n) !== String(raw[k]) || !CAT[k]) dirty = true;
+    }
+    if (dirty) { try { store.setItem('eyveBag', JSON.stringify(out)); } catch (e) {} }
+    return out;
   })();
 
   var saveBag = function () {
@@ -71,6 +83,17 @@
     return r ? Math.round(eligibleTotal() * r.pct / 100) : 0;
   };
   var payable = function () { return Math.max(0, subtotal() - discount()); };
+
+  /* The same maths against a hypothetical bag, used to price a routine swap. */
+  var payableOf = function (b) {
+    var r = promoRule(), sub = 0, elig = 0;
+    for (var k in b) {
+      if (!CAT[k]) continue;
+      sub += CAT[k].price * b[k];
+      if (r && !(r.excludesBundles && CAT[k].bundle)) elig += CAT[k].price * b[k];
+    }
+    return Math.max(0, sub - (r ? Math.round(elig * r.pct / 100) : 0));
+  };
 
   var shipping = function () {
     /* Measured on the subtotal, not the discounted total. The threshold is
@@ -324,7 +347,7 @@
     paintHeader();
     paintCart();
     bump();
-    if (!gained) { say('Nine per order is the limit on ' + CAT[slug].name); return; }
+    if (!gained) { say('Nine is the most we take of ' + CAT[slug].name + ' in one order'); return; }
     say(CAT[slug].name + (gained > 1 ? ' \u00d7 ' + gained : '') + ' added to bag',
         { label: 'View bag', href: 'cart.html' });
   };
@@ -387,10 +410,15 @@
   /* The route the buyer told us about decides whether COD is even offered.
      Promising a serviceability check and then ignoring it at the one moment
      it matters is worse than never offering the check. */
+  /* Set when a full PIN has been entered that we cannot place. It is not the
+     same state as "no PIN yet": re-opening cash on delivery because the buyer
+     mistyped is how an undeliverable COD order gets placed. */
+  var pinUnknown = false;
   var routeTakesCod = function () {
+    if (pinUnknown) return false;
     if (!lastPin) return true;                 // nothing claimed yet, so allow
     var r = lookupPin(lastPin);
-    return r ? r.cod : true;
+    return r ? r.cod : false;
   };
 
   $$('[data-pin-form]').forEach(function (form) {
@@ -482,26 +510,30 @@
     if (note) {
       if (subs === 0) { note.textContent = ''; note.hidden = true; }
       else if (ship === 0) { note.textContent = 'Free shipping applied.'; note.hidden = false; }
-      else { note.textContent = inr(FREE_SHIP - due) + ' more for free shipping.'; note.hidden = false; }
+      else { note.textContent = inr(FREE_SHIP - subs) + ' more for free shipping.'; note.hidden = false; }
     }
+    /* There was a button here offering to close the free-shipping gap with one
+       click. The cheapest product is 799 rupees and the only two bags that can
+       sit below the threshold leave gaps of 200 and 100, so it was correctly
+       suppressed in every reachable state — which makes it dead weight. The
+       note stays; the button goes. A sub-400 add-on would bring it back. */
     var gapBtn = $('[data-ship-fill]');
-    if (gapBtn) {
-      var gap = FREE_SHIP - due;
-      var pick = null;
-      if (subs > 0 && ship > 0) {
-        Object.keys(CAT).forEach(function (k) {
-          if (CAT[k].bundle || bag[k]) return;
-          if (CAT[k].price >= gap && (!pick || CAT[k].price < CAT[pick].price)) pick = k;
-        });
-        /* Offering a 799 add to save 69 is not a nudge, it is an insult. */
-        if (pick && CAT[pick].price > gap * 2) pick = null;
+    if (gapBtn) gapBtn.hidden = true;
+
+    /* The bag already knows the route, so it should not repeat generic COD
+       terms on a PIN it has just told you is prepaid-only. */
+    $$('[data-cod-terms]').forEach(function (e) {
+      var r = lastPin && lookupPin(lastPin);
+      if (r && !r.cod) {
+        e.innerHTML = '<b>' + lastPin + ' is a prepaid-only route.</b> Cash on delivery is not ' +
+          'offered there, so this order is paid before dispatch. Arriving in ' + r.lo +
+          '\u2013' + r.hi + ' working days \u2014 by <b>' + r.by + '</b>.';
+      } else if (r) {
+        e.innerHTML = '<b>Delivering to ' + r.pin + ' by ' + r.by + '.</b> Paying cash on ' +
+          'delivery adds a ' + inr(COD) + ' handling fee at checkout, and is capped at ' +
+          inr(COD_CAP) + ' collected.';
       }
-      gapBtn.hidden = !pick;
-      if (pick) {
-        gapBtn.setAttribute('data-add', pick);
-        gapBtn.textContent = 'Add ' + CAT[pick].name + ' \u2014 ' + inr(CAT[pick].price) + ', shipping free';
-      }
-    }
+    });
 
     var keys = Object.keys(bag).filter(function (k) { return bag[k] > 0 && CAT[k]; });
     var empty = $('#cartEmpty'), side = $('#cartSide'), extras = $('#cartExtras');
@@ -520,19 +552,33 @@
        afterwards, is the kind of thing that loses a customer permanently. */
     var upsell = $('[data-bundle-upsell]');
     if (upsell) {
+      /* What the swap is really worth, with whatever code is applied taken
+         into account — a routine is excluded from the code, so swapping gives
+         the discount up. Quoting the undiscounted gap would promise 548 rupees
+         and deliver 68. And when more than one routine matches, offer the one
+         that saves most rather than the one that sorts first. */
       var match = null;
+      var nowDue = payable();
       Object.keys(CAT).forEach(function (k) {
         var b = CAT[k];
-        if (!b.bundle || bag[k] || match) return;
+        if (!b.bundle) return;
         var has = b.parts && b.parts.every(function (part) { return bag[part] > 0; });
         if (!has) return;
-        var paying = b.parts.reduce(function (t, part) { return t + CAT[part].price; }, 0);
-        if (paying > b.price) match = { slug: k, b: b, save: paying - b.price };
+        var after = {};
+        Object.keys(bag).forEach(function (x) { after[x] = bag[x]; });
+        b.parts.forEach(function (part) {
+          after[part] -= 1;
+          if (after[part] <= 0) delete after[part];
+        });
+        after[k] = (after[k] || 0) + 1;
+        var save = nowDue - payableOf(after);
+        if (save > 0 && (!match || save > match.save)) match = { slug: k, b: b, save: save };
       });
       upsell.hidden = !match;
       if (match) {
         upsell.innerHTML =
-          '<p class="upsell__h">Those three are a routine.</p>' +
+          '<p class="upsell__h">Those ' + (match.b.parts.length === 3 ? 'three' : 'five') +
+          ' are a routine.</p>' +
           '<p class="upsell__p">' + match.b.name + ' holds the same ' + match.b.parts.length +
           ' products for ' + inr(match.b.price) + ' \u2014 <b>' + inr(match.save) + ' less</b> than buying them separately.</p>' +
           '<button class="btn btn--sm" type="button" data-swap-bundle="' + match.slug + '">' +
@@ -556,6 +602,10 @@
       var csWrap = csRail.closest('[data-crosssell-wrap]');
       if (csWrap) csWrap.hidden = !offer.length || !keys.length;
     }
+
+    /* The applied-code panel states a saving. It has to be recomputed whenever
+       the saving changes, which is every quantity step, removal and swap. */
+    if (typeof repaintPromo === 'function') repaintPromo();
 
     if (!linesEl) return;
     if (!keys.length) { linesEl.innerHTML = ''; return; }
@@ -651,10 +701,11 @@
       var v = (coPin.value || '').trim();
       var r = lookupPin(v);
       if (r) {
-        lastPin = v;
+        lastPin = v; pinUnknown = false;
         try { if (store) store.setItem('eyvePin', v); } catch (e) {}
-      } else if (v.length === 6) {
-        lastPin = '';
+      } else {
+        pinUnknown = v.length >= 6;
+        if (v.length >= 6) lastPin = '';
       }
       if (coPinOut) {
         if (!v) { coPinOut.textContent = ''; coPinOut.className = 'pincheck__out'; }
@@ -675,6 +726,7 @@
   }
 
   /* --- Promotion code ---------------------------------------------------- */
+  var repaintPromo = null;
   $$('[data-promo-form]').forEach(function (form) {
     var input = $('input', form);
     var out = $('[data-promo-out]', form.parentNode) || $('[data-promo-out]', form);
@@ -695,6 +747,7 @@
       }
       if (input) input.value = promo;
     };
+    repaintPromo = paintApplied;
     paintApplied();
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -758,6 +811,7 @@
            rather than an order number on an empty page. */
         try {
           store.setItem('eyveReceipt', JSON.stringify({
+            at: Date.now(),
             lines: Object.keys(bag).filter(function (k) { return bag[k] > 0 && CAT[k]; })
                      .map(function (k) { return { k: k, n: bag[k] }; }),
             promo: promo, disc: discount(), sub: subtotal(),
@@ -790,6 +844,13 @@
   if (receiptEl) {
     var r = null;
     try { r = JSON.parse((store && store.getItem('eyveReceipt')) || 'null'); } catch (e) {}
+    /* A receipt survives a refresh, not a week. Coming back later should not
+       re-render an old order as though it had just been placed. */
+    var FRESH = 6 * 60 * 60 * 1000;
+    if (r && r.at && Date.now() - r.at > FRESH) {
+      try { store.removeItem('eyveReceipt'); store.removeItem('eyveOrder'); } catch (e) {}
+      r = null;
+    }
     if (r && r.lines && r.lines.length) {
       var total = Math.max(0, r.sub - (r.disc || 0)) + (r.ship || 0) + (r.cod || 0);
       receiptEl.innerHTML =
@@ -831,6 +892,19 @@
     }
     paintHeader();
   }
+
+  /* --- Restored and duplicated views --------------------------------------
+     A page restored from the back-forward cache keeps whatever was on screen
+     when it was frozen — an address form for a bag that has since been
+     emptied, a live pay button for nothing. And a second tab writing to
+     storage leaves this one showing a total that no longer exists. */
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) window.location.reload();
+  });
+  window.addEventListener('storage', function (e) {
+    if (e.key && e.key.indexOf('eyve') !== 0) return;
+    window.location.reload();
+  });
 
   /* --- Forms ------------------------------------------------------------ */
   /* A toast disappears. A receipt stays on the page. */
@@ -961,7 +1035,10 @@
     var paintSound = function () {
       if (!soundEl) return;
       soundEl.setAttribute('aria-pressed', wantSound ? 'true' : 'false');
-      soundEl.textContent = wantSound ? 'Sound off' : 'Sound on';
+      /* Report the state, not the action. "Sound on" beside a muted video
+         reads as a claim about the video, not as a button. */
+      soundEl.textContent = wantSound ? 'Sound on' : 'Muted';
+      soundEl.setAttribute('aria-label', wantSound ? 'Sound on. Mute the video' : 'Muted. Turn sound on');
     };
 
     var teardown = function () {

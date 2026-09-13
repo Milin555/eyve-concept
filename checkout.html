@@ -16,9 +16,8 @@
 <meta property="og:image" content="https://eyve.in/assets/opt/life-serum-box.webp">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/opt/logo.webp">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@200;300;400;500&family=Newsreader:ital,opsz,wght@0,6..72,200..500;1,6..72,200..400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="font" type="font/woff2" href="assets/font/archivo.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/font/newsreader.woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/style.css">
 <script type="application/ld+json">{
   "@context": "https://schema.org",
@@ -173,9 +172,9 @@
             <label class="pay__opt"><input type="radio" name="pay" value="upi" checked><span><b>UPI — fastest</b>GPay, PhonePe, Paytm or any UPI app. One approval, inside the app.</span></label>
             <label class="pay__opt"><input type="radio" name="pay" value="card"><span><b>Card</b>Credit or debit, processed by Razorpay</span></label>
             <label class="pay__opt"><input type="radio" name="pay" value="netbanking"><span><b>Netbanking</b>All major Indian banks</span></label>
-            <label class="pay__opt"><input type="radio" name="pay" value="cod"><span><b>Cash on Delivery</b>Pay the courier. ₹49 handling fee, and ₹5,000 is the ceiling</span></label>
+            <label class="pay__opt"><input type="radio" name="pay" value="cod" aria-describedby="codCap"><span><b>Cash on Delivery</b>Pay the courier. ₹49 handling fee, and ₹5,000 is the ceiling</span></label>
           </div>
-          <p class="codcap" data-cod-cap hidden>Cash on delivery is available up to ₹5,000. This order is above that, so it needs to be prepaid.</p>
+          <p class="codcap" id="codCap" role="status" data-cod-cap hidden>Cash on delivery is available up to ₹5,000. This order is above that, so it needs to be prepaid.</p>
         </fieldset>
         <fieldset class="co__set">
           <legend class="h3">Invoice and notes</legend>
