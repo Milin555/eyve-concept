@@ -1480,8 +1480,8 @@ table { border-collapse: collapse; width: 100%; }
 .line__fig { aspect-ratio: 4/5; overflow: hidden; border-radius: 2px; background: var(--mist); display: block; }
 .line__fig img { width: 100%; height: 100%; object-fit: cover; }
 .line__name {
-  font-family: var(--display); font-weight: 400; text-transform: uppercase;
-  letter-spacing: var(--tr-mono-sm); font-size: var(--t-m); line-height: 1.3;
+  font-family: var(--display); font-weight: 400;
+  letter-spacing: var(--tr-tight); font-size: var(--t-m); line-height: 1.3;
 }
 .line__size { font-family: var(--mono); font-size: var(--t-label); color: var(--ink-mute); margin-top: 0.35rem; letter-spacing: var(--tr-mono-sm); }
 .line__ctl { margin-top: 0.8rem; display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
@@ -1636,8 +1636,12 @@ table { border-collapse: collapse; width: 100%; }
 .buybar__txt { flex: 1; min-width: 0; }
 .buybar__txt b {
   display: block; font-family: var(--display); font-weight: 400;
-  text-transform: uppercase; letter-spacing: var(--tr-tight); font-size: var(--t-small);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  letter-spacing: var(--tr-tight); font-size: var(--t-small);
+  /* Two lines rather than "LIPOBRIGHT PRO …" — a buy bar that cannot say
+     what it is selling is not doing its job. */
+  line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .buybar__txt span { font-family: var(--mono); font-size: var(--t-label); color: var(--ink-mute); }
 .buybar .btn { padding: 0.75rem 1.1rem; flex: none; }
@@ -2185,7 +2189,7 @@ html.is-locked { overflow: hidden; }
 .xsell + .xsell { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--line-soft); }
 .xsell__fig { aspect-ratio: 4/5; overflow: hidden; border-radius: 2px; background: var(--mist); }
 .xsell__fig img { width: 100%; height: 100%; object-fit: cover; }
-.xsell__body h3 { font-family: var(--display); font-size: var(--t-s); font-weight: 400; line-height: 1.35; }
+.xsell__body h3 { font-family: var(--display); font-size: var(--t-s); font-weight: 400; line-height: 1.35; letter-spacing: var(--tr-tight); }
 .xsell__meta { font-family: var(--mono); font-size: var(--t-label); color: var(--ink-mute); margin-top: 0.25rem; letter-spacing: var(--tr-mono-sm); }
 .btn--ghost { background: none; color: var(--ink); border: 1px solid var(--line); }
 .btn--ghost::before { display: none; }
@@ -2521,4 +2525,29 @@ blockquote { hanging-punctuation: first last; }
 @media (max-width: 1000px) {
   .conf__grid { grid-template-columns: 1fr; }
   .conf__side { position: static; }
+}
+
+/* --- Phones -------------------------------------------------------------
+   Announcement bar, header and buy bar were taking about a quarter of an
+   844px viewport permanently. The rail shrinks and the announcement loses a
+   line, which gives roughly a tenth of the screen back to the page. */
+@media (max-width: 700px) {
+  :root { --rail: 88px; }
+  .ticker { padding-block: 0.45rem; }
+  .hdr__in { height: 52px; }
+
+  /* Five cards in a two-column grid orphan the fifth beside an empty cell. */
+  /* The fifth card closes the row as a wide one rather than sitting alone
+     beside an empty cell — figure left, everything else beside it. */
+  .prods__grid > .pcard:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .prods__grid > .pcard:last-child:nth-child(odd) .pcard__link {
+    display: grid; grid-template-columns: 40% 1fr; column-gap: var(--gap); align-items: center;
+  }
+  .prods__grid > .pcard:last-child:nth-child(odd) .pcard__body { padding-top: 0; }
+
+  /* The schematic rendered above its own numbered list, reversing the reading
+     order the desktop layout establishes. */
+  .descent__grid { display: flex; flex-direction: column; }
+  .descent__steps { order: 1; }
+  .strata { order: 2; }
 }
