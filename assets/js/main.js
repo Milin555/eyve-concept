@@ -10,6 +10,7 @@
   var FREE_SHIP = window.EYVE_FREE_SHIP || 999;
   var SHIP = window.EYVE_SHIP || 69;
   var COD = window.EYVE_COD || 49;
+  var COD_CAP = window.EYVE_COD_CAP || 5000;
 
   var inr = function (n) {
     return '₹' + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 });
@@ -42,8 +43,37 @@
     return t;
   };
 
+  /* --- Promotions -------------------------------------------------------
+     A code discounts single products only. Routines are already cut harder
+     than any code we run, so a code can never make the routine the worse buy. */
+  var PROMOS = window.EYVE_PROMOS || {};
+  var promo = (function () {
+    try { return store ? (store.getItem('eyvePromo') || '') : ''; } catch (e) { return ''; }
+  })();
+  var savePromo = function () {
+    try { if (store) { promo ? store.setItem('eyvePromo', promo) : store.removeItem('eyvePromo'); } } catch (e) {}
+  };
+  var promoRule = function () { return PROMOS[promo] || null; };
+
+  /* Value the code can act on — everything except routines, if it excludes them. */
+  var eligibleTotal = function () {
+    var r = promoRule(), t = 0;
+    if (!r) return 0;
+    for (var k in bag) {
+      if (!CAT[k]) continue;
+      if (r.excludesBundles && CAT[k].bundle) continue;
+      t += CAT[k].price * bag[k];
+    }
+    return t;
+  };
+  var discount = function () {
+    var r = promoRule();
+    return r ? Math.round(eligibleTotal() * r.pct / 100) : 0;
+  };
+  var payable = function () { return Math.max(0, subtotal() - discount()); };
+
   var shipping = function () {
-    var s = subtotal();
+    var s = payable();
     return (s === 0 || s >= FREE_SHIP) ? 0 : SHIP;
   };
 
@@ -100,31 +130,30 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
   }
 
-  /* --- Reveal ----------------------------------------------------------- */
+  /* --- Reveal -----------------------------------------------------------
+     One observer, one class, then the element is forgotten and its transition
+     stripped so the compositing layer is released. Measuring every candidate on
+     every frame of every scroll was costing more than the effect was worth. */
   var revealables = $$('.rv, .rvimg, .rvline');
-  if (reduce) {
-    revealables.forEach(function (el) { el.classList.add('is-in'); });
+  var showAll = function () { revealables.forEach(function (el) { el.classList.add('is-in'); }); };
+
+  if (reduce || !('IntersectionObserver' in window)) {
+    showAll();
   } else {
-    var pending = revealables.slice(), queued = false;
-    var sweep = function () {
-      queued = false;
-      var trigger = window.innerHeight * 0.92;
-      for (var i = pending.length - 1; i >= 0; i--) {
-        var r = pending[i].getBoundingClientRect();
-        if (r.top < trigger) { pending[i].classList.add('is-in'); pending.splice(i, 1); }
-      }
-      if (!pending.length) {
-        window.removeEventListener('scroll', request);
-        window.removeEventListener('resize', request);
-      }
-    };
-    var request = function () { if (!queued) { queued = true; requestAnimationFrame(sweep); } };
-    window.addEventListener('scroll', request, { passive: true });
-    window.addEventListener('resize', request);
-    window.addEventListener('load', request);
-    request();
-    setTimeout(request, 400);
+    var rio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var el = e.target;
+        el.classList.add('is-in');
+        rio.unobserve(el);
+        el.addEventListener('transitionend', function () { el.style.transition = 'none'; }, { once: true });
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.01 });
+    revealables.forEach(function (el) { rio.observe(el); });
   }
+
+  /* Nothing on this site is allowed to stay invisible because a script failed. */
+  setTimeout(showAll, 3000);
 
   /* --- Count-up --------------------------------------------------------- */
   var counters = $$('[data-count]');
@@ -227,12 +256,18 @@
 
   /* --- Toast ------------------------------------------------------------ */
   var toast = $('#toast'), toastTimer;
-  var say = function (msg) {
+  /* A toast can carry one action — an undo, or a way onward. */
+  var toastAct = null;
+  var say = function (msg, opt) {
     if (!toast) return;
-    toast.textContent = msg;
+    toastAct = (opt && opt.act) || null;
+    var tail = '';
+    if (opt && opt.href) tail = ' <a class="toast__act" href="' + opt.href + '">' + opt.label + '</a>';
+    else if (opt && opt.act) tail = ' <button class="toast__act" type="button" data-toast-act>' + opt.label + '</button>';
+    toast.innerHTML = '<span>' + msg + '</span>' + tail;
     toast.classList.add('is-on');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toast.classList.remove('is-on'); }, 2800);
+    toastTimer = setTimeout(function () { toast.classList.remove('is-on'); toastAct = null; }, tail ? 6000 : 2800);
   };
 
   /* --- Bag -------------------------------------------------------------- */
@@ -251,27 +286,59 @@
   var qty = 1;
   var qtyEl = $('[data-qty]');
   if (qtyEl) {
-    $$('[data-qty-step]').forEach(function (btn) {
+    var steps = $$('[data-qty-step]');
+    var paintQty = function () {
+      qtyEl.textContent = String(qty);
+      steps.forEach(function (b) {
+        var d = parseInt(b.getAttribute('data-qty-step'), 10);
+        var off = (d < 0 && qty <= 1) || (d > 0 && qty >= 9);
+        b.setAttribute('aria-disabled', off ? 'true' : 'false');
+      });
+    };
+    steps.forEach(function (btn) {
       btn.addEventListener('click', function () {
         qty = Math.max(1, Math.min(9, qty + parseInt(btn.getAttribute('data-qty-step'), 10)));
-        qtyEl.textContent = String(qty);
+        paintQty();
       });
     });
+    paintQty();
   }
 
   var addToBag = function (slug, n) {
     if (!CAT[slug]) return;
-    bag[slug] = Math.min(9, (bag[slug] || 0) + n);
+    var before = bag[slug] || 0;
+    bag[slug] = Math.min(9, before + n);
+    var gained = bag[slug] - before;
     saveBag();
     paintHeader();
     paintCart();
-    say(CAT[slug].name + (n > 1 ? ' × ' + n : '') + ' added to bag');
+    bump();
+    if (!gained) { say('Nine per order is the limit on ' + CAT[slug].name); return; }
+    say(CAT[slug].name + (gained > 1 ? ' \u00d7 ' + gained : '') + ' added to bag',
+        { label: 'View bag', href: 'cart.html' });
   };
 
-  $$('[data-add]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      addToBag(btn.getAttribute('data-add'), btn.closest('.pdp__buy') ? qty : 1);
-    });
+  /* The bag count flinches when something lands in it. */
+  var bump = function () {
+    if (!countEl || reduce) return;
+    countEl.classList.remove('is-bump');
+    void countEl.offsetWidth;
+    countEl.classList.add('is-bump');
+  };
+
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-add]');
+    if (!btn) return;
+    /* Both the buy column and the sticky bar belong to the same product page,
+       so both respect whatever the stepper says. */
+    var usesQty = !!(btn.closest('.pdp__buy') || btn.closest('.buybar'));
+    addToBag(btn.getAttribute('data-add'), usesQty && qtyEl ? qty : 1);
+    if (btn.hasAttribute('data-add-label')) {
+      var was = btn.getAttribute('data-add-label');
+      btn.classList.add('is-done');
+      window.setTimeout(function () { btn.classList.remove('is-done'); }, 1500);
+      if (was) { /* label swap is handled in CSS via ::after */ }
+    }
   });
 
   paintHeader();
@@ -286,54 +353,108 @@
   };
 
   function paintCart() {
-    var subs = subtotal(), ship = shipping();
-    var cod = (isCheckout && codOn()) ? COD : 0;
-    var total = subs + ship + cod;
+    var subs = subtotal(), disc = discount(), due = payable();
+    var ship = shipping();
+    var codBlocked = due > COD_CAP;
+    var cod = (isCheckout && codOn() && !codBlocked) ? COD : 0;
+    var total = due + ship + cod;
 
     $$('[data-sum-sub]').forEach(function (e) { e.textContent = inr(subs); });
+    $$('[data-sum-disc]').forEach(function (e) { e.textContent = '\u2212' + inr(disc); });
+    $$('[data-disc-row]').forEach(function (e) { e.hidden = disc === 0; });
+    $$('[data-disc-code]').forEach(function (e) { e.textContent = promo; });
     $$('[data-sum-ship]').forEach(function (e) {
-      e.textContent = subs === 0 ? '—' : (ship === 0 ? 'Free' : inr(ship));
+      e.textContent = subs === 0 ? '\u2014' : (ship === 0 ? 'Free' : inr(ship));
     });
     $$('[data-sum-cod]').forEach(function (e) { e.textContent = inr(COD); });
     $$('[data-cod-row]').forEach(function (e) { e.hidden = !cod; });
     $$('[data-sum-total]').forEach(function (e) { e.textContent = inr(total); });
     $$('[data-pay]').forEach(function (e) {
-      e.textContent = cod ? 'Place order — ' + inr(total) + ' on delivery' : 'Pay ' + inr(total);
+      e.textContent = cod ? 'Place order \u2014 ' + inr(total) + ' on delivery' : 'Pay ' + inr(total);
     });
 
+    /* COD has a ceiling, and the ceiling is enforced rather than merely stated. */
+    var codRadio = $('input[name="pay"][value="cod"]');
+    if (codRadio) {
+      codRadio.disabled = codBlocked;
+      var wrap = codRadio.closest('.pay__opt');
+      if (wrap) wrap.classList.toggle('is-off', codBlocked);
+      if (codBlocked && codRadio.checked) {
+        var upi = $('input[name="pay"][value="upi"]');
+        if (upi) { upi.checked = true; }
+      }
+    }
+    $$('[data-cod-cap]').forEach(function (e) { e.hidden = !codBlocked; });
+
+    /* The free-shipping gap is only worth showing if it can be acted on. */
     var note = $('[data-ship-note]');
     if (note) {
-      note.textContent = subs === 0 ? ''
-        : (ship === 0 ? 'Free shipping applied.'
-                      : inr(FREE_SHIP - subs) + ' more for free shipping.');
+      if (subs === 0) { note.textContent = ''; note.hidden = true; }
+      else if (ship === 0) { note.textContent = 'Free shipping applied.'; note.hidden = false; }
+      else { note.textContent = inr(FREE_SHIP - due) + ' more for free shipping.'; note.hidden = false; }
+    }
+    var gapBtn = $('[data-ship-fill]');
+    if (gapBtn) {
+      var gap = FREE_SHIP - due;
+      var pick = null;
+      if (subs > 0 && ship > 0) {
+        Object.keys(CAT).forEach(function (k) {
+          if (CAT[k].bundle || bag[k]) return;
+          if (CAT[k].price >= gap && (!pick || CAT[k].price < CAT[pick].price)) pick = k;
+        });
+      }
+      gapBtn.hidden = !pick;
+      if (pick) {
+        gapBtn.setAttribute('data-add', pick);
+        gapBtn.textContent = 'Add ' + CAT[pick].name + ' \u2014 ' + inr(CAT[pick].price) + ', shipping free';
+      }
     }
 
-    var empty = $('#cartEmpty'), side = $('#cartSide');
     var keys = Object.keys(bag).filter(function (k) { return bag[k] > 0 && CAT[k]; });
+    var empty = $('#cartEmpty'), side = $('#cartSide'), extras = $('#cartExtras');
     if (empty) empty.hidden = keys.length > 0;
     if (side) side.hidden = keys.length === 0;
+    if (extras) extras.hidden = keys.length === 0;
 
     var checkoutBtn = $('[data-checkout]');
     if (checkoutBtn) checkoutBtn.classList.toggle('is-off', keys.length === 0);
+
+    /* Cross-sell only what is not already in the bag. */
+    var csRail = $('[data-crosssell]');
+    if (csRail) {
+      var offer = Object.keys(CAT).filter(function (k) { return !CAT[k].bundle && !bag[k]; }).slice(0, 3);
+      csRail.innerHTML = offer.map(function (k) {
+        var p = CAT[k];
+        return '<article class="xsell">' +
+          '<a class="xsell__fig" href="' + p.url + '"><img src="assets/opt/' + p.img + '-sm.webp" alt="" width="600" height="750" loading="lazy" decoding="async"></a>' +
+          '<div class="xsell__body"><h3><a href="' + p.url + '">' + p.name + '</a></h3>' +
+          '<p class="xsell__meta">' + p.size + ' \u00b7 ' + inr(p.price) + '</p></div>' +
+          '<button class="btn btn--ghost btn--sm" type="button" data-add="' + k + '">Add</button>' +
+          '</article>';
+      }).join('');
+      var csWrap = csRail.closest('[data-crosssell-wrap]');
+      if (csWrap) csWrap.hidden = !offer.length || !keys.length;
+    }
 
     if (!linesEl) return;
     if (!keys.length) { linesEl.innerHTML = ''; return; }
 
     linesEl.innerHTML = keys.map(function (k) {
       var p = CAT[k], n = bag[k];
-      var controls = isCheckout ? '<span class="line__qty">× ' + n + '</span>'
+      var controls = isCheckout ? '<span class="line__qty">\u00d7 ' + n + '</span>'
         : '<div class="qty qty--sm">' +
-            '<button type="button" data-line-step="-1" data-slug="' + k + '" aria-label="Decrease quantity of ' + p.name + '">−</button>' +
+            '<button type="button" data-line-step="-1" data-slug="' + k + '" aria-label="Decrease quantity of ' + p.name + '">\u2212</button>' +
             '<span>' + n + '</span>' +
             '<button type="button" data-line-step="1" data-slug="' + k + '" aria-label="Increase quantity of ' + p.name + '">+</button>' +
           '</div>' +
-          '<button class="line__rm" type="button" data-line-rm="' + k + '">Remove</button>';
+          '<button class="line__rm" type="button" data-line-rm="' + k + '" aria-label="Remove ' + p.name + ' from bag">Remove</button>';
+      var was = p.rrp ? '<span class="line__was">' + inr(p.rrp) + '</span>' : '';
       return '<article class="line">' +
-        '<a class="line__fig" href="' + p.url + '"><img src="assets/opt/' + p.img + '.webp" alt="" width="600" height="750" loading="lazy"></a>' +
+        '<a class="line__fig" href="' + p.url + '"><img src="assets/opt/' + p.img + '-sm.webp" alt="" width="600" height="750" loading="lazy" decoding="async"></a>' +
         '<div class="line__body"><h3 class="line__name"><a href="' + p.url + '">' + p.name + '</a></h3>' +
         '<p class="line__size">' + p.size + '</p>' +
         '<div class="line__ctl">' + controls + '</div></div>' +
-        '<span class="line__price">' + inr(p.price * n) + '</span></article>';
+        '<span class="line__price">' + was + inr(p.price * n) + '</span></article>';
     }).join('');
   }
 
@@ -352,24 +473,129 @@
     if (rm) {
       var k = rm.getAttribute('data-line-rm');
       var name = CAT[k] ? CAT[k].name : 'Item';
+      var had = bag[k];
       delete bag[k];
       saveBag(); paintHeader(); paintCart();
-      say(name + ' removed');
+      say(name + ' removed', { label: 'Undo', act: function () {
+        bag[k] = had; saveBag(); paintHeader(); paintCart(); say(name + ' put back');
+      } });
+      return;
     }
+    var undo = e.target.closest('[data-toast-act]');
+    if (undo && toastAct) { var fn = toastAct; toastAct = null; fn(); }
   });
 
   $$('input[name="pay"]').forEach(function (r) {
     r.addEventListener('change', paintCart);
   });
 
+
+  /* --- Serviceability ----------------------------------------------------
+     The shipping policy promises a PIN-code check, so the site runs one.
+     Metro sorting hubs clear in 2–4 working days; everywhere else 4–7.
+     A handful of far-route PINs are prepaid-only, which is how couriers
+     actually operate. */
+  var METRO = ['110','400','560','600','700','500','411','380','395','122','201','641','682','302'];
+  var NO_COD = ['190','191','192','193','194','737','790','791','792','793','794','795','796','797','798','799','744'];
+  var WORKDAYS = function (n) {
+    var d = new Date(), added = 0;
+    while (added < n) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0) added++; }
+    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+  };
+  var lookupPin = function (pin) {
+    if (!/^[1-9][0-9]{5}$/.test(pin)) return null;
+    var p3 = pin.slice(0, 3);
+    var metro = METRO.indexOf(p3) > -1;
+    return {
+      pin: pin,
+      cod: NO_COD.indexOf(p3) === -1,
+      lo: metro ? 2 : 4,
+      hi: metro ? 4 : 7,
+      by: WORKDAYS(metro ? 4 : 7)
+    };
+  };
+  var lastPin = (function () {
+    try { return store ? (store.getItem('eyvePin') || '') : ''; } catch (e) { return ''; }
+  })();
+
+  $$('[data-pin-form]').forEach(function (form) {
+    var input = $('input', form);
+    var out = $('[data-pin-out]', form.parentNode) || $('[data-pin-out]', form);
+    var render = function (r, typed) {
+      if (!out) return;
+      if (!r) {
+        out.className = 'pincheck__out is-bad';
+        out.textContent = typed ? 'That is not a valid Indian PIN code.' : '';
+        return;
+      }
+      out.className = 'pincheck__out is-ok';
+      out.innerHTML = '<b>Delivers to ' + r.pin + '</b> in ' + r.lo + '\u2013' + r.hi +
+        ' working days \u2014 by <b>' + r.by + '</b>.' +
+        (r.cod ? ' Cash on delivery available.'
+               : ' <span class="pincheck__warn">Prepaid only on this route.</span>');
+    };
+    if (input && lastPin) { input.value = lastPin; render(lookupPin(lastPin), false); }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = (input.value || '').trim();
+      var r = lookupPin(v);
+      if (r) { lastPin = v; try { if (store) store.setItem('eyvePin', v); } catch (x) {} }
+      render(r, true);
+    });
+  });
+
+  /* --- Promotion code ---------------------------------------------------- */
+  $$('[data-promo-form]').forEach(function (form) {
+    var input = $('input', form);
+    var out = $('[data-promo-out]', form.parentNode) || $('[data-promo-out]', form);
+    var render = function (msg, ok) {
+      if (!out) return;
+      out.className = 'promo__out ' + (ok ? 'is-ok' : 'is-bad');
+      out.innerHTML = msg;
+    };
+    var paintApplied = function () {
+      if (!promo) { render('', true); if (input) input.value = ''; return; }
+      var d = discount();
+      if (!d) {
+        render('<b>' + promo + '</b> applies to single products only \u2014 your bag is all routines, ' +
+               'which are already priced below it. <button class="promo__clear" type="button" data-promo-clear>Remove</button>', true);
+      } else {
+        render('<b>' + promo + '</b> applied \u2014 you save ' + inr(d) +
+               '. <button class="promo__clear" type="button" data-promo-clear>Remove</button>', true);
+      }
+      if (input) input.value = promo;
+    };
+    paintApplied();
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var code = (input.value || '').trim().toUpperCase();
+      if (!PROMOS[code]) { render('That code is not one of ours.', false); return; }
+      promo = code; savePromo(); paintCart(); paintApplied();
+      say(code + ' applied');
+    });
+    form.parentNode.addEventListener('click', function (e) {
+      if (!e.target.closest('[data-promo-clear]')) return;
+      promo = ''; savePromo(); paintCart(); paintApplied();
+      say('Code removed');
+    });
+  });
+
   /* --- Checkout --------------------------------------------------------- */
   var co = $('#checkoutForm');
   if (co) {
     if (!bagCount()) {
-      var warn = document.createElement('p');
-      warn.className = 'co__empty';
-      warn.innerHTML = 'Your bag is empty. <a class="tlink" href="shop.html">See the range</a>';
-      co.prepend(warn);
+      /* Nobody should be asked for a delivery address for an order of nothing. */
+      co.hidden = true;
+      var side = $('#coSide');
+      if (side) side.hidden = true;
+      var host = $('#coEmpty');
+      if (host) host.hidden = false;
+      else {
+        var warn = document.createElement('p');
+        warn.className = 'co__empty';
+        warn.innerHTML = 'Your bag is empty. <a class="tlink" href="shop.html">See the range</a>';
+        co.parentNode.insertBefore(warn, co);
+      }
     }
     co.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -400,13 +626,26 @@
   }
 
   /* --- Forms ------------------------------------------------------------ */
+  /* A toast disappears. A receipt stays on the page. */
+  var settle = function (form, msg) {
+    var done = form.parentNode.querySelector('.formdone');
+    if (done) {
+      done.innerHTML = msg;
+      done.hidden = false;
+      form.hidden = true;
+      done.setAttribute('tabindex', '-1');
+      done.focus();
+    }
+    say(done ? 'Done' : msg.replace(/<[^>]+>/g, ''));
+  };
+
   var news = $('[data-news]');
   if (news) {
     news.addEventListener('submit', function (e) {
       e.preventDefault();
       var i = $('input', news);
-      say('Thank you. Check ' + (i && i.value ? i.value : 'your inbox') + ' to confirm.');
-      news.reset();
+      settle(news, '<b>Thank you.</b> Check ' + (i && i.value ? i.value : 'your inbox') +
+                   ' to confirm. One email a month, and nothing else.');
     });
   }
 
@@ -414,8 +653,8 @@
   if (contact) {
     contact.addEventListener('submit', function (e) {
       e.preventDefault();
-      say('Message sent. We reply within one working day.');
-      contact.reset();
+      settle(contact, '<b>Message sent.</b> We reply within one working day, ' +
+                      'Monday to Saturday.');
     });
   }
 
@@ -477,6 +716,122 @@
         if (to) { e.preventDefault(); selectTab(to, true); }
       });
     });
+  }
+
+  /* --- Reels ------------------------------------------------------------ */
+  /* A rail of posters. One <video> exists at a time, inside the viewer, so
+     nothing downloads until somebody asks for it. */
+  var reelRail = $('[data-reels]');
+  if (reelRail) {
+    var reelCards = $$('[data-reel]', reelRail);
+    var viewer = $('#reelViewer');
+    var stage = viewer && $('[data-reel-stage]', viewer);
+    var capEl = viewer && $('[data-reel-caption]', viewer);
+    var idxEl = viewer && $('[data-reel-index]', viewer);
+    var current = -1, lastFocus = null, video = null;
+
+    var teardown = function () {
+      if (video) { video.pause(); video.removeAttribute('src'); video.load(); }
+      if (stage) stage.innerHTML = '';
+      video = null;
+    };
+
+    var mount = function (i) {
+      var card = reelCards[i];
+      if (!card) return;
+      teardown();
+      current = i;
+      video = document.createElement('video');
+      video.src = card.getAttribute('data-reel');
+      video.poster = card.getAttribute('data-poster');
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.setAttribute('preload', 'auto');
+      video.controls = true;
+      video.loop = true;
+      video.muted = true;                    /* muted so autoplay is permitted */
+      video.className = 'reelv__video';
+      stage.appendChild(video);
+      var p = video.play();
+      if (p && p.catch) p.catch(function () { /* user will press play */ });
+      if (capEl) capEl.textContent = card.getAttribute('data-caption') || '';
+      if (idxEl) idxEl.textContent = (i + 1) + ' / ' + reelCards.length;
+      reelCards.forEach(function (c, n) { c.setAttribute('aria-selected', n === i ? 'true' : 'false'); });
+    };
+
+    var closeViewer = function () {
+      teardown();
+      viewer.classList.remove('is-open');
+      viewer.setAttribute('aria-hidden', 'true');
+      document.documentElement.classList.remove('is-locked');
+      current = -1;
+      if (lastFocus) { lastFocus.focus(); lastFocus = null; }
+    };
+
+    var openViewer = function (i, origin) {
+      lastFocus = origin || document.activeElement;
+      viewer.classList.add('is-open');
+      viewer.setAttribute('aria-hidden', 'false');
+      document.documentElement.classList.add('is-locked');
+      mount(i);
+      var close = $('[data-reel-close]', viewer);
+      if (close) close.focus();
+    };
+
+    var step = function (d) {
+      if (current < 0) return;
+      mount((current + d + reelCards.length) % reelCards.length);
+    };
+
+    reelCards.forEach(function (card, i) {
+      card.addEventListener('click', function () { openViewer(i, card); });
+    });
+
+    if (viewer) {
+      viewer.addEventListener('click', function (e) {
+        if (e.target.closest('[data-reel-close]') || e.target === viewer ||
+            e.target.hasAttribute('data-reel-scrim')) { closeViewer(); return; }
+        if (e.target.closest('[data-reel-prev]')) step(-1);
+        if (e.target.closest('[data-reel-next]')) step(1);
+      });
+      document.addEventListener('keydown', function (e) {
+        if (!viewer.classList.contains('is-open')) return;
+        if (e.key === 'Escape') { e.preventDefault(); closeViewer(); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+        else if (e.key === 'Tab') {                    /* keep focus inside */
+          var f = $$('button, [href], video', viewer).filter(function (el) {
+            return el.offsetParent !== null;
+          });
+          if (!f.length) return;
+          var first = f[0], last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      });
+    }
+
+    /* Drag-to-scroll the rail with a pointer, the way a real shelf behaves. */
+    var down = false, startX = 0, startL = 0, moved = 0;
+    reelRail.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'touch') return;          /* native scroll is better */
+      down = true; moved = 0; startX = e.clientX; startL = reelRail.scrollLeft;
+      reelRail.classList.add('is-dragging');
+    });
+    window.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      var dx = e.clientX - startX;
+      moved = Math.max(moved, Math.abs(dx));
+      reelRail.scrollLeft = startL - dx;
+    });
+    window.addEventListener('pointerup', function () {
+      if (!down) return;
+      down = false;
+      reelRail.classList.remove('is-dragging');
+    });
+    reelRail.addEventListener('click', function (e) {
+      if (moved > 6) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
   }
 
 })();
