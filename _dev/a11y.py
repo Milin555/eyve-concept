@@ -26,7 +26,7 @@ PROBE = r"""
     }
     return 'rgb(255,255,255)';
   }
-  var out={contrast:[],labels:[],headings:[],landmarks:{},dupIds:[],tabindex:[]};
+  var out={contrast:[],labels:[],headings:[],landmarks:{},dupIds:[],tabindex:[],links:[]};
 
   document.querySelectorAll('p,li,span,a,b,dt,dd,h1,h2,h3,h4,button,label,cite,blockquote,figcaption').forEach(function(el){
     if(!el.textContent.trim()) return;
@@ -48,6 +48,26 @@ PROBE = r"""
     if(ratio < need)
       out.contrast.push({t:el.textContent.trim().slice(0,42), r:+ratio.toFixed(2), need:need,
                          px:+size.toFixed(1), sel:(el.tagName+'.'+(el.className||'')).slice(0,50)});
+  });
+
+  // A link inside prose must be tellable from the prose. Colour alone is not
+  // enough, and identical colour is not even that. WCAG 1.4.1.
+  document.querySelectorAll('p a, li a, dd a, blockquote a').forEach(function(a){
+    if(a.closest('nav,.crumbs,.ftr,.hdr,.tlink')) return;
+    if(a.classList.contains('tlink') || a.classList.contains('btn')) return;
+    var p = a.parentElement;
+    if(!p || !a.textContent.trim()) return;
+    // 1.4.1 is about a link embedded in running text. A link that IS the whole
+    // element is distinguished by its own size and weight, not by colour.
+    if(p.textContent.trim() === a.textContent.trim()) return;
+    if(a.closest('h1,h2,h3,h4,h5,h6')) return;
+    var ac = getComputedStyle(a), pc = getComputedStyle(p);
+    var underlined = ac.textDecorationLine.indexOf('underline') > -1 ||
+                     parseFloat(ac.borderBottomWidth) > 0.5;
+    var weightier = parseInt(ac.fontWeight,10) - parseInt(pc.fontWeight,10) >= 200;
+    if(underlined || weightier) return;
+    if(ac.color !== pc.color) return;          // a different colour, at least
+    out.links.push((a.textContent.trim().slice(0,34)) + '  [' + ac.color + ' on prose of the same colour]');
   });
 
   document.querySelectorAll('input,select,textarea').forEach(function(el){
@@ -106,6 +126,7 @@ try:
             seen.add(k)
             msgs.append(f'contrast {c["r"]}:1 (needs {c["need"]}) {c["px"]}px  {c["sel"]}  "{c["t"]}"')
         for l in sorted(set(d["labels"])): msgs.append(f'unlabelled control: {l}')
+        for l in sorted(set(d.get("links", []))): msgs.append(f'link indistinguishable from its prose: {l}')
         for h in d["headings"]: msgs.append(f'heading {h}')
         for i in sorted(set(d["dupIds"])): msgs.append(f'duplicate id: {i}')
         for t in set(d["tabindex"]): msgs.append(f'positive tabindex on {t}')

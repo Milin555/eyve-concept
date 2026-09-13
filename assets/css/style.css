@@ -1304,6 +1304,15 @@ table { border-collapse: collapse; width: 100%; }
 .pdp__assure li {
   font-family: var(--mono); font-size: var(--t-label); letter-spacing: var(--tr-mono);
   text-transform: uppercase; color: var(--ink-mute); line-height: 1.65;
+  /* The global reset sets `svg { display: block }` for full-bleed figures. In
+     the pay card that put each trust mark on a line of its own with its label
+     wrapped underneath — the most trust-critical component on the site
+     rendering as an accident. */
+  display: flex; align-items: flex-start; gap: 0.55rem;
+}
+.pdp__assure li svg {
+  display: inline-block; flex: none;
+  width: 1em; height: 1em; margin-top: 0.3em;
 }
 .pdp__assure li b { white-space: nowrap; }
 .pdp__assure li b { color: var(--ink); font-weight: 500; }
@@ -2762,4 +2771,99 @@ blockquote { hanging-punctuation: first last; }
   #coSide > .co__lines { grid-column: 1; }
   #coSide > .cart__sum { grid-column: 2; grid-row: 2 / span 2; }
   #coSide > .promo { grid-column: 1; margin-top: 0; }
+}
+
+/* --- Links inside prose --------------------------------------------------
+   A link set in the same colour and weight as the sentence around it, with no
+   underline, is not a link — it is a secret. These sit inside running text, so
+   they carry a rule rather than a colour shift, which survives greyscale and
+   every form of colour blindness. WCAG 1.4.1. */
+.body-copy p a:not(.tlink):not(.btn),
+.policy p a:not(.tlink):not(.btn),
+.policy li a:not(.tlink):not(.btn),
+.body-copy li a:not(.tlink):not(.btn),
+.faq__a a:not(.tlink):not(.btn),
+.lede a:not(.tlink):not(.btn),
+.pdp__solves a:not(.tlink):not(.btn),
+dd a:not(.tlink):not(.btn):not([class]) {
+  color: var(--indigo);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: var(--indigo-a30);
+  transition: text-decoration-color var(--dur-fast) var(--ease-op);
+}
+.body-copy p a:not(.tlink):not(.btn):hover,
+.policy p a:not(.tlink):not(.btn):hover,
+.policy li a:not(.tlink):not(.btn):hover,
+.faq__a a:not(.tlink):not(.btn):hover,
+.lede a:not(.tlink):not(.btn):hover,
+.pdp__solves a:not(.tlink):not(.btn):hover {
+  text-decoration-color: currentColor;
+}
+
+/* A field that turns red has to say why. The neutral hint stays out of the way
+   while the error is on screen, so the two never contradict each other. */
+.fld__err {
+  display: block;
+  margin-top: 0.4rem;
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-mono-sm);
+  line-height: 1.55;
+  color: var(--danger);
+}
+.fld.is-bad > small:not(.fld__err) { display: none; }
+
+/* --- Legal pages ---------------------------------------------------------
+   These were the only pages opting out of the site's grid: a 640px column of
+   prose with 664px of nothing beside it, and thirty-one headings between them
+   without a single id, so neither the footer nor the grievance flow could link
+   to a clause. The rail fills the column and makes the document navigable. */
+.policy__grid {
+  display: grid;
+  grid-template-columns: var(--sp3) var(--sp8);
+  column-gap: var(--gap);
+  row-gap: var(--s-4);
+  align-items: start;
+}
+.policy__toc {
+  position: sticky;
+  top: calc(var(--rail) + 1.5rem);
+  padding-right: var(--s-2);
+  border-right: 1px solid var(--line-soft);
+}
+.policy__toc-h {
+  font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); text-transform: uppercase; color: var(--ink-mute);
+}
+.policy__toc ol { margin-top: var(--s-2); counter-reset: toc; }
+.policy__toc li { counter-increment: toc; }
+.policy__toc li + li { margin-top: 0.1rem; }
+.policy__toc a {
+  display: block;
+  padding: 0.42rem 0;
+  font-size: var(--t-small);
+  line-height: 1.35;
+  color: var(--ink-soft);
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur-fast) var(--ease-op);
+}
+.policy__toc a::before {
+  content: counter(toc, decimal-leading-zero) "  ";
+  font-family: var(--mono); font-size: var(--t-label-sm); color: var(--indigo);
+  letter-spacing: var(--tr-mono-sm);
+}
+.policy__toc a:hover { color: var(--indigo); }
+.policy__toc .policy__upd {
+  margin-top: var(--s-3); padding-top: var(--s-3);
+  border-top: 1px solid var(--line-soft);
+}
+.policy h2 { scroll-margin-top: calc(var(--rail) + 1.5rem); }
+.policy h2:target { color: var(--indigo); }
+
+@media (max-width: 900px) {
+  .policy__grid { grid-template-columns: 1fr; }
+  .policy__toc { position: static; border-right: 0; border-bottom: 1px solid var(--line-soft); padding-bottom: var(--s-3); }
+  .policy__toc ol { columns: 2; column-gap: var(--gap); }
 }

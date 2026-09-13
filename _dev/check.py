@@ -52,3 +52,21 @@ try:
 finally:
     b.close()
 print("\n".join(bad) if bad else "clean: no broken images, links or media")
+
+# Anything that was transparent must still be transparent. Flattening the brand
+# mark renders it as a black box on every page, and no other check sees it.
+def alpha_guard():
+    from PIL import Image
+    import glob
+    bad = []
+    for f in sorted(glob.glob('assets/opt/*.webp')):
+        base = f.replace('-sm.webp', '.webp').replace('-lg.webp', '.webp') \
+                .replace('-xs.webp', '.webp').replace('-tn.webp', '.webp')
+        if base == f or not os.path.exists(base):
+            continue
+        if Image.open(base).mode in ('RGBA', 'LA') and Image.open(f).mode not in ('RGBA', 'LA'):
+            bad.append(f'{f} lost the alpha channel {base} has')
+    return bad
+
+for m in alpha_guard():
+    print('  -', m)

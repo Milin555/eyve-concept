@@ -23,12 +23,16 @@ for f in sorted(glob.glob('assets/opt/*.webp')):
     size = os.path.getsize(f)
     if size < BUDGET:
         continue
-    im = Image.open(f).convert('RGB')
+    im = Image.open(f)
+    # Never flatten an alpha channel — the brand mark is transparent, and
+    # converting it to RGB renders it as a black box on every page.
+    if im.mode not in ('RGBA', 'LA'):
+        im = im.convert('RGB')
     s = suffix(os.path.basename(f))
     cap = TARGET[s]
     w = min(im.width, cap)
     o = im if w == im.width else im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
-    o.save(f, 'WEBP', quality=Q, method=6)
+    o.save(f, 'WEBP', quality=Q, method=6, exact=(im.mode == 'RGBA'))
     new = os.path.getsize(f)
     before += size; after += new; changed += 1
     print(f'{os.path.basename(f):28s} {size//1024:4d}KB -> {new//1024:4d}KB   {im.size[0]}x{im.size[1]} -> {o.size[0]}x{o.size[1]}')

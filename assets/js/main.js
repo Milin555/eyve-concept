@@ -823,18 +823,48 @@
     co.addEventListener('submit', function (e) {
       e.preventDefault();
       var invalid = null;
+
+      /* Decide what is wrong before saying anything about it — the PIN check
+         used to run after the messages were written, so the one field with a
+         rule of its own was the one field that stayed silent. */
       $$('input[required], select[required]', co).forEach(function (f) {
         var v = (f.value || '').trim();
         var bad = !v || (f.pattern && !new RegExp('^' + f.pattern + '$').test(v));
         f.closest('.fld').classList.toggle('is-bad', bad);
         if (bad && !invalid) invalid = f;
       });
-      /* The pattern only proves six digits. A PIN also has to be a real one. */
+      /* A well-formed PIN still has to be a real one. */
       if (coPin && !lookupPin((coPin.value || '').trim())) {
-        var fld = coPin.closest('.fld');
-        if (fld) fld.classList.add('is-bad');
+        var pinFld = coPin.closest('.fld');
+        if (pinFld) pinFld.classList.add('is-bad');
         if (!invalid) invalid = coPin;
       }
+
+      /* Five of the seven fields had no message at all, and the two that did
+         showed their unchanged neutral hint under a red border. A payment form
+         that turns red and says nothing is a form people abandon. */
+      $$('.fld', co).forEach(function (fld) {
+        var f = $('input, select, textarea', fld);
+        if (!f) return;
+        var note = $('.fld__err', fld);
+        if (!fld.classList.contains('is-bad')) { if (note) note.remove(); return; }
+        if (!note) {
+          note = document.createElement('small');
+          note.className = 'fld__err';
+          note.setAttribute('role', 'alert');
+          fld.appendChild(note);
+        }
+        var v = (f.value || '').trim();
+        var label = (($('label', fld) || {}).textContent || 'This').replace(/\s*optional.*$/i, '').trim();
+        note.textContent = !v
+          ? (f.tagName === 'SELECT' ? 'Choose a state so we can route the parcel.'
+                                    : label + ' is needed to deliver the order.')
+          : (f.id === 'coEmail' ? 'That does not look like an email address we can send a receipt to.'
+          : (f.id === 'coPhone' ? 'An Indian mobile number is ten digits and starts 6, 7, 8 or 9.'
+          : (f.id === 'coPin'   ? 'We do not recognise that PIN code. Check the six digits.'
+          : 'Please check ' + label.toLowerCase() + '.')));
+      });
+
       if (invalid) { invalid.focus(); say('Please check the highlighted fields'); return; }
       if (!bagCount()) { say('Your bag is empty'); return; }
       var order = 'EYV-' + String(Date.now()).slice(-6);
