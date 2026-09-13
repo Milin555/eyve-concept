@@ -92,16 +92,22 @@ python -m http.server 8848
 
 ## Tests
 
-Six harnesses drive a real browser through the Chrome DevTools Protocol.
+Ten harnesses drive a real browser through the Chrome DevTools Protocol. No
+framework, nothing to install — `_dev/cdp.py` speaks raw RFC6455 over a socket,
+so Chrome and Python 3 are the only requirements.
 
 ```bash
 python3 _dev/check.py      # broken links, images, media
-python3 _dev/journey.py    # 44 assertions across the whole funnel
+python3 _dev/journey.py    # 63 assertions across the whole funnel
 python3 _dev/widths.py     # 21 pages x 17 widths, 320 to 2560
 python3 _dev/a11y.py       # contrast, labels, landmarks, heading order
+python3 _dev/casecheck.py  # references that would 404 on a case-sensitive host
 python3 _dev/typecheck.py  # every rendered size, tracking and leading
 python3 _dev/gridcheck.py  # every grid's columns and gutter
+python3 _dev/weigh.py      # what each page costs on a cold load
 ```
+
+`_dev/README.md` describes the rest.
 
 `widths.py` asserts that nothing escapes its viewport and no line inside a
 reveal mask is clipped — `overflow-x: hidden` was removed from `body` so that a
