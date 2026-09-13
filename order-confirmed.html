@@ -63,13 +63,12 @@
 </div>
 <main id="main" class="pg pg--plain">
   <section class="section conf">
-    <div class="shell conf__in">
+    <div class="shell conf__grid">
+      <div class="conf__main">
       <svg class="conf__tick" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="none" stroke="currentColor" stroke-width="1"/><path d="M14 24.5l7 7 13-14" fill="none" stroke="currentColor" stroke-width="2"/></svg>
       <p class="eyebrow eyebrow--plain">Order confirmed</p>
       <h1 class="display h2 sh-t">Thank you</h1>
       <p class="lede sh-p">Your order <b id="ordNo">EYV-000000</b> is confirmed. A receipt goes to your email now. When the parcel leaves us, the courier&rsquo;s own tracking link follows by email and on WhatsApp.</p>
-      <p class="conf__eta" data-receipt-eta hidden></p>
-      <div class="receipt" data-receipt></div>
       <div class="conf__meta">
         <div><span class="mono">Dispatch</span><p>Within 24–48 working hours</p></div>
         <div><span class="mono">Delivery</span><p>2–4 days metro, 4–7 elsewhere</p></div>
@@ -79,6 +78,11 @@
       <p class="body-copy sh-p">There is no account area on this site and no order-status page, so keep this number: <b>quoting it to us is how you get an answer</b>. Until the courier&rsquo;s link arrives we know only what you know &mdash; that the order is with us. After it arrives, that link is the live record and we are reading the same screen you are. If nothing has reached you within two working days, or if tracking stops moving for three, write to the care team with the number above and we will chase the courier rather than ask you to.</p>
       <p class="disclose"><b>Illustrative.</b> EYVE is a real brand; this site is an unaffiliated design concept. No order has been placed, no payment has been taken and nothing will be dispatched. The order number above was generated in your browser a moment ago, and no email or message is going anywhere.</p>
       <div class="hero__cta"><a class="btn" href="shop.html">Continue shopping</a><a class="tlink" href="contact.html">Contact the care team</a></div>
+      </div>
+      <aside class="conf__side">
+        <p class="conf__eta" data-receipt-eta hidden></p>
+        <div class="receipt" data-receipt></div>
+      </aside>
     </div>
   </section>
 </main>

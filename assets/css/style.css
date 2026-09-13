@@ -86,9 +86,13 @@
   --s-5: 3.5rem;
   --s-6: 5.5rem;
   --s-7: 8rem;
-  --s-section:    clamp(4.5rem, 9vw, 9rem);
-  --s-section-lg: clamp(6rem, 12vw, 12rem);
-  --s-section-sm: clamp(3.5rem, 7vw, 7rem);
+  /* Section rhythm. These were 9rem / 12rem / 7rem, applied uniformly to
+     sections carrying three lines and to sections carrying a whole argument,
+     which is what made a product page fifteen screens on a phone. The vw
+     term is also lowered so the padding does not grow faster than the type. */
+  --s-section:    clamp(3.5rem, 6vw, 6.5rem);
+  --s-section-lg: clamp(4.5rem, 8vw, 8.5rem);
+  --s-section-sm: clamp(2.75rem, 4.5vw, 4.5rem);
 
   /* Shell */
 
@@ -138,7 +142,9 @@ body {
   line-height: 1.62;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  /* No overflow-x guard. It masks escaping content rather than preventing it,
+     and every width from 320 to 2560 is swept in _dev/shot.py — if something
+     starts escaping, it should show up there rather than be quietly clipped. */
 }
 img, svg, video { display: block; max-width: 100%; height: auto; }
 button, input { font: inherit; color: inherit; }
@@ -343,6 +349,7 @@ table { border-collapse: collapse; width: 100%; }
 .hdr__cart svg { width: 20px; height: 22px; }
 .hdr__cart:hover { color: var(--indigo); }
 .hdr__count {
+  min-width: 20px; min-height: 20px;
   position: absolute;
   top: -2px;
   right: -2px;
@@ -725,25 +732,6 @@ table { border-collapse: collapse; width: 100%; }
 .pcard__add:hover::before { transform: translateY(0); }
 
 /* --- Protocol (bundle) -------------------------------------------------- */
-.proto__fig {
-  aspect-ratio: 5 / 6;
-  overflow: hidden;
-  background: var(--sand-pale);
-  border-radius: 3px;
-}
-.proto__fig img { width: 100%; height: 100%; object-fit: cover; }
-.proto__list { margin-top: var(--s-3); border-top: 1px solid var(--line); }
-.proto__list li {
-  display: grid;
-  grid-template-columns: 2.4rem 1fr auto;
-  gap: var(--s-2);
-  align-items: baseline;
-  padding: 0.85rem 0;
-  border-bottom: 1px solid var(--line-soft);
-}
-.proto__list .n { font-family: var(--mono); font-size: var(--t-label); color: var(--indigo); letter-spacing: var(--tr-mono); }
-.proto__list .nm { font-size: var(--t-m); }
-.proto__list .pr { font-family: var(--mono); font-size: var(--t-s); color: var(--ink-mute); }
 .proto__total {
   margin-top: var(--s-3);
   display: flex;
@@ -1111,7 +1099,7 @@ table { border-collapse: collapse; width: 100%; }
   border-radius: 3px;
 }
 .gal__main img { width: 100%; height: 100%; object-fit: cover; }
-.gal__thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.55rem; margin-top: 0.55rem; }
+.gal__thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.55rem; margin-top: 0.55rem; margin-bottom: var(--s-4); }
 .gal__thumbs button {
   aspect-ratio: 1;
   overflow: hidden;
@@ -1227,8 +1215,9 @@ table { border-collapse: collapse; width: 100%; }
   padding: 1.05rem 0;
   border-bottom: 1px solid var(--line-soft);
   display: grid;
-  grid-template-columns: 13rem 1fr;
-  gap: var(--s-3);
+  grid-template-columns: minmax(13rem, var(--sp3)) 1fr;
+  row-gap: var(--s-1);
+  column-gap: var(--gap);
   align-items: baseline;
 }
 .inci b {
@@ -1252,6 +1241,8 @@ table { border-collapse: collapse; width: 100%; }
   align-items: baseline;
 }
 .steps .n {
+  min-width: 5.5ch;
+  white-space: nowrap;
   font-family: var(--display);
   font-weight: 200;
   font-size: var(--t-h3);
@@ -1417,13 +1408,6 @@ table { border-collapse: collapse; width: 100%; }
 .pdp__solves b { color: var(--ink); }
 
 /* --- Protocol ----------------------------------------------------------- */
-.proto__grid {
-  display: grid;
-  grid-template-columns: var(--sp6) var(--sp6);
-  row-gap: clamp(2rem, 5vw, 4.5rem);
-  column-gap: var(--gap);
-  align-items: center;
-}
 .proto__rows { border-top: 1px solid var(--line); }
 .proto__row {
   display: grid; grid-template-columns: 5.5rem 1fr auto;
@@ -1451,7 +1435,6 @@ table { border-collapse: collapse; width: 100%; }
   letter-spacing: var(--tr-tight); margin-top: 0.3rem;
   display: flex; align-items: baseline; gap: 0.8rem; flex-wrap: wrap;
 }
-.proto__why { margin-top: var(--s-5); }
 .proto__banner {
   display: flex; align-items: center; justify-content: space-between;
   gap: var(--s-4); flex-wrap: wrap;
@@ -1515,7 +1498,6 @@ table { border-collapse: collapse; width: 100%; }
 .qty--sm button { width: 2.1rem; height: 2.2rem; }
 .qty--sm span { width: 1.8rem; font-size: var(--t-small); }
 
-.cart__empty { padding: var(--s-5) 0; color: var(--ink-soft); }
 .cart__side {
   background: var(--mist); border-radius: 3px; padding: var(--s-3);
   position: sticky; top: calc(var(--rail) + 1rem);
@@ -1708,27 +1690,6 @@ table { border-collapse: collapse; width: 100%; }
 .compliance__note a { color: var(--indigo); text-decoration: underline; text-underline-offset: 3px; }
 
 /* Hero credit line — sits on the page, never over the photograph */
-.hero__credit {
-  margin-top: 1rem;
-  display: flex;
-  align-items: baseline;
-  gap: 0.7rem;
-  font-size: var(--t-s);
-}
-.hero__credit .mono {
-  font-size: var(--t-label-sm);
-  letter-spacing: var(--tr-mono);
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
-.hero__credit a {
-  color: var(--ink);
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 2px;
-  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
-}
-.hero__credit a:hover { color: var(--indigo); border-bottom-color: var(--indigo); }
-
 /* Trailing prose inside a tab pane needs air */
 .tabpane .body-copy { margin-top: var(--s-3); }
 
@@ -1919,9 +1880,8 @@ table { border-collapse: collapse; width: 100%; }
 @media (pointer: coarse) {
   .tlink { padding-block: 0.7rem; }
   .hdr__logo { padding-block: 0.55rem; display: inline-flex; }
-  .ftr li a, .ftr__soon, .ftr__addr a { display: inline-block; padding-block: 0.55rem; }
+  .ftr li a, .ftr__addr a { display: inline-block; padding-block: 0.55rem; }
   .ftr li + li { margin-top: 0.1rem; }
-  .ftr__grievance a { display: inline-block; padding-block: 0.4rem; }
   .crumbs a { padding-block: 0.62rem; display: inline-block; }
   .crumbs { align-items: center; }
   .contact__list a { display: inline-block; padding-block: 0.45rem; }
@@ -2515,3 +2475,50 @@ blockquote { hanging-punctuation: first last; }
 /* The announcement carries three clauses. On a phone that is three centred
    lines, so the middle one — the least commercial — steps out. */
 @media (max-width: 700px) { .ticker__mid { display: none; } .ticker__mid + .ticker__sep { display: none; } }
+
+/* --- Short columns ------------------------------------------------------
+   Where a short column accompanies a long one, it travels rather than ending
+   halfway and leaving the rest of its column empty. Six blocks measured
+   between 131 and 1,265px of dead column before this. */
+@media (min-width: 1001px) {
+  .faq__grid > header,
+  .cart__grid > .cart__side,
+  .contact__grid > .contact__side {
+    position: sticky;
+    top: calc(var(--rail) + 1.5rem);
+  }
+  /* The descent's steps and its schematic should finish together. */
+  .descent__steps { align-content: space-between; min-height: 0; }
+  .descent__grid { align-items: stretch; }
+}
+
+/* The reel card was a 523px poster beside 184px of copy, centred, so most of
+   the row was empty. Cap the poster to the copy it accompanies. */
+.reelcard { align-items: center; }
+.reelcard .reel { max-width: 210px; }
+@media (min-width: 701px) { .reelcard { align-items: center; } }
+
+/* The arrival screen used 45% of its width and left the rest empty. The
+   confirmation reads down the left; what was actually bought sits beside it. */
+.conf__grid {
+  display: grid;
+  grid-template-columns: var(--sp7) var(--sp5);
+  column-gap: var(--gap);
+  row-gap: var(--s-5);
+  align-items: start;
+  max-width: var(--maxw);
+  margin-inline: auto;
+}
+.conf__main { max-width: var(--m-wide); }
+.conf__side {
+  background: var(--mist);
+  border-radius: 3px;
+  padding: var(--s-4);
+  position: sticky;
+  top: calc(var(--rail) + 1.5rem);
+}
+.conf__side:empty, .conf__side .receipt:empty { min-height: 0; }
+@media (max-width: 1000px) {
+  .conf__grid { grid-template-columns: 1fr; }
+  .conf__side { position: static; }
+}
