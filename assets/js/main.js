@@ -910,6 +910,21 @@
     });
   }
 
+  /* --- Deferred drawers ---------------------------------------------------
+     A lazy image inside a closed <details> never starts loading, and opening
+     the element is not on its own enough to start it. Hand them over on the
+     first open, so the drawer costs nothing until it is asked for and is not
+     a grid of empty frames when it is. */
+  $$('details').forEach(function (d) {
+    d.addEventListener('toggle', function () {
+      if (!d.open) return;
+      $$('img[loading="lazy"]', d).forEach(function (img) {
+        img.loading = 'eager';
+        if (!img.complete) img.src = img.src;      /* nudge the fetch */
+      });
+    });
+  });
+
   /* --- Reels ------------------------------------------------------------ */
   /* A rail of posters. One <video> exists at a time, inside the viewer, so
      nothing downloads until somebody asks for it. */

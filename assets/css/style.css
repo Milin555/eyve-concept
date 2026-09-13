@@ -448,7 +448,9 @@ table { border-collapse: collapse; width: 100%; }
 .shead { max-width: var(--m-read); }
 /* Only the prose inside a head is measure-capped; a row head spans the grid so
    its trailing link lands on the right datum instead of a third of the way in. */
-.shead--row { max-width: none; }
+.shead--row, .reels__head { max-width: none; }
+.reels__head > div { flex: 1 1 auto; min-width: 0; }
+.reels__head .h2 { max-width: 18ch; }
 .shead .h2 { margin-top: 1rem; }
 .shead + .facets, .shead + .steps, .shead + .inci, .shead + .timing,
 .shead + .artcase, .shead + .revs__grid { margin-top: var(--s-4); }
@@ -2392,3 +2394,21 @@ blockquote { hanging-punctuation: first last; }
   margin-top: var(--s-2); font-size: var(--t-m); color: var(--ink-soft);
 }
 .conf__eta b { color: var(--ink); font-weight: 500; }
+
+/* One structural break in the stack ---------------------------------------
+   Every section boundary on this page was a flat horizontal line between two
+   colours. The founder's portrait crosses one of them, so the page reads as
+   composed rather than stacked. Desktop only — on a phone the sections are
+   already a single column and the overlap would just crop her. */
+@media (min-width: 1001px) {
+  .founder { padding-bottom: 0; position: relative; z-index: 1; }
+  .founder__grid { align-items: end; }
+  .founder__fig {
+    margin-bottom: calc(-1 * clamp(2.5rem, 6vw, 6rem));
+    position: relative; z-index: 2;
+    box-shadow: 0 18px 48px rgba(10, 11, 30, 0.22);
+  }
+  .founder__grid > div { padding-bottom: var(--s-section); }
+  /* and the band it hangs into has to make room for it */
+  .reels { position: relative; padding-top: calc(var(--s-section) + clamp(2.5rem, 6vw, 6rem)); }
+}
