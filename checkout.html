@@ -28,7 +28,7 @@
   <img class="intro__mark" src="assets/opt/logo.webp" alt="" width="260" height="146">
 </div>
 <div class="topbar">
-<div class="ticker">Free shipping over ₹999 · Cash on Delivery across India · First order <b>15% lighter</b> with code <b>WELCOME15</b></div>
+<div class="ticker">Free shipping from ₹999 · Cash on Delivery on most routes · First order <b>15% lighter</b> with code <b>WELCOME15</b></div>
 <header class="hdr" id="hdr">
   <div class="shell hdr__in">
     <a class="hdr__logo" href="index.html" aria-label="EYVE home">
@@ -68,7 +68,7 @@
   </div>
   <section class="section section--tight">
     <div class="shell">
-      <div class="co__empty conf__in">
+      <div class="co__empty conf__in" id="coSide">
         <h2 class="h3">What you are paying for</h2>
         <div id="coLines" class="co__lines"></div>
         <dl class="cart__sum">
@@ -86,6 +86,15 @@
           </form>
           <p class="promo__out" data-promo-out role="status"></p>
         </div>
+      </div>
+    </div>
+    <div class="shell" id="coEmpty" hidden>
+      <div class="empty">
+        <img class="empty__mark" src="assets/opt/logo.webp" alt="" width="260" height="146">
+        <p class="empty__h">There is nothing to pay for yet.</p>
+        <p>Your bag is empty, so there is no address to take and no total to settle.</p>
+        <a class="btn" href="shop.html">See the range
+          <svg class="btn__arrow" width="14" height="8" viewBox="0 0 14 8" aria-hidden="true"><path d="M0 4h12M9 1l3 3-3 3" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></a>
       </div>
     </div>
     <form class="shell cart__grid" id="checkoutForm" novalidate>
@@ -145,7 +154,7 @@
                 <option>Puducherry</option>
               </optgroup>
             </select></div>
-            <div class="fld"><label for="coPin">PIN code</label><input id="coPin" name="pin" inputmode="numeric" maxlength="6" autocomplete="postal-code" pattern="[1-9][0-9]{5}" required></div>
+            <div class="fld"><label for="coPin">PIN code</label><input id="coPin" name="pin" inputmode="numeric" maxlength="6" autocomplete="postal-code" pattern="[1-9][0-9]{5}" required><small class="pincheck__out" data-co-pin-out role="status"></small></div>
           </div>
         </fieldset>
         <fieldset class="co__set">
@@ -214,6 +223,13 @@
   </div>
 </footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="stickybar" aria-hidden="false">
+  <div class="stickybar__sum">
+    <span class="stickybar__lbl">To pay</span>
+    <span class="stickybar__n" data-sum-total>&#8377;0</span>
+  </div>
+  <button class="btn" type="submit" form="checkoutForm" data-pay>Pay &#8377;0</button>
+</div>
 <script src="assets/js/catalogue.js"></script>
 <script src="assets/js/main.js"></script>
 </body>

@@ -73,7 +73,10 @@
   var payable = function () { return Math.max(0, subtotal() - discount()); };
 
   var shipping = function () {
-    var s = payable();
+    /* Measured on the subtotal, not the discounted total. The threshold is
+       advertised against what you put in the bag; moving it once a code
+       applies is exactly the kind of surprise that loses an order. */
+    var s = subtotal();
     return (s === 0 || s >= FREE_SHIP) ? 0 : SHIP;
   };
 
@@ -287,16 +290,16 @@
   var qty = 1;
   var qtyEl = $('[data-qty]');
   if (qtyEl) {
-    var steps = $$('[data-qty-step]');
+    var qtySteps = $$('[data-qty-step]');
     var paintQty = function () {
       qtyEl.textContent = String(qty);
-      steps.forEach(function (b) {
+      qtySteps.forEach(function (b) {
         var d = parseInt(b.getAttribute('data-qty-step'), 10);
         var off = (d < 0 && qty <= 1) || (d > 0 && qty >= 9);
         b.setAttribute('aria-disabled', off ? 'true' : 'false');
       });
     };
-    steps.forEach(function (btn) {
+    qtySteps.forEach(function (btn) {
       btn.addEventListener('click', function () {
         qty = Math.max(1, Math.min(9, qty + parseInt(btn.getAttribute('data-qty-step'), 10)));
         paintQty();
@@ -340,6 +343,76 @@
 
   paintHeader();
 
+  /* --- Serviceability ----------------------------------------------------
+     The shipping policy promises a PIN-code check, so the site runs one.
+     Metro sorting hubs clear in 2–4 working days; everywhere else 4–7.
+     A handful of far-route PINs are prepaid-only, which is how couriers
+     actually operate. */
+  var METRO = ['110','400','560','600','700','500','411','380','395','122','201','641','682','302'];
+  var NO_COD = ['190','191','192','193','194','737','790','791','792','793','794','795','796','797','798','799','744'];
+  var WORKDAYS = function (n) {
+    var d = new Date(), added = 0;
+    while (added < n) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0) added++; }
+    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+  };
+  /* India's postal circles occupy a known set of leading pairs. Anything
+     outside them is not a PIN code, however well-formed it looks. */
+  var CIRCLES = [[11,19],[20,28],[30,34],[36,39],[40,44],[45,49],[50,53],
+                 [56,59],[60,64],[67,69],[70,74],[75,77],[78,79],[80,85]];
+  var lookupPin = function (pin) {
+    if (!/^[1-9][0-9]{5}$/.test(pin)) return null;
+    var p2 = parseInt(pin.slice(0, 2), 10);
+    var known = CIRCLES.some(function (r) { return p2 >= r[0] && p2 <= r[1]; });
+    if (!known) return null;
+    var p3 = pin.slice(0, 3);
+    var metro = METRO.indexOf(p3) > -1;
+    return {
+      pin: pin,
+      cod: NO_COD.indexOf(p3) === -1,
+      lo: metro ? 2 : 4,
+      hi: metro ? 4 : 7,
+      by: WORKDAYS(metro ? 4 : 7)
+    };
+  };
+  var lastPin = (function () {
+    try { return store ? (store.getItem('eyvePin') || '') : ''; } catch (e) { return ''; }
+  })();
+  /* The route the buyer told us about decides whether COD is even offered.
+     Promising a serviceability check and then ignoring it at the one moment
+     it matters is worse than never offering the check. */
+  var routeTakesCod = function () {
+    if (!lastPin) return true;                 // nothing claimed yet, so allow
+    var r = lookupPin(lastPin);
+    return r ? r.cod : true;
+  };
+
+  $$('[data-pin-form]').forEach(function (form) {
+    var input = $('input', form);
+    var out = $('[data-pin-out]', form.parentNode) || $('[data-pin-out]', form);
+    var render = function (r, typed) {
+      if (!out) return;
+      if (!r) {
+        out.className = 'pincheck__out is-bad';
+        out.textContent = typed ? 'That is not a valid Indian PIN code.' : '';
+        return;
+      }
+      out.className = 'pincheck__out is-ok';
+      out.innerHTML = '<b>Delivers to ' + r.pin + '</b> in ' + r.lo + '\u2013' + r.hi +
+        ' working days \u2014 by <b>' + r.by + '</b>.' +
+        (r.cod ? ' Cash on delivery available.'
+               : ' <span class="pincheck__warn">Prepaid only on this route.</span>');
+    };
+    if (input && lastPin) { input.value = lastPin; render(lookupPin(lastPin), false); }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = (input.value || '').trim();
+      var r = lookupPin(v);
+      if (r) { lastPin = v; try { if (store) store.setItem('eyvePin', v); } catch (x) {} }
+      render(r, true);
+    });
+  });
+
+
   /* --- Cart & checkout rendering ---------------------------------------- */
   var linesEl = $('#cartLines') || $('#coLines');
   var isCheckout = !!$('#checkoutForm');
@@ -352,7 +425,12 @@
   function paintCart() {
     var subs = subtotal(), disc = discount(), due = payable();
     var ship = shipping();
-    var codBlocked = due > COD_CAP;
+    /* The courier collects the whole amount, fee and shipping included, so
+       that is the figure the ceiling has to be measured against. */
+    var codTotal = due + ship + COD;
+    var overCap = codTotal > COD_CAP;
+    var offRoute = !routeTakesCod();
+    var codBlocked = overCap || offRoute;
     var cod = (isCheckout && codOn() && !codBlocked) ? COD : 0;
     var total = due + ship + cod;
 
@@ -382,7 +460,15 @@
         if (upi) { upi.checked = true; }
       }
     }
-    $$('[data-cod-cap]').forEach(function (e) { e.hidden = !codBlocked; });
+    $$('[data-cod-cap]').forEach(function (e) {
+      e.hidden = !codBlocked;
+      if (!codBlocked) return;
+      e.textContent = offRoute
+        ? 'Cash on delivery is not available on the route to ' + lastPin +
+          '. This order needs to be prepaid.'
+        : 'Cash on delivery is capped at ' + inr(COD_CAP) + ' collected, and this order ' +
+          'comes to ' + inr(codTotal) + ' with the handling fee and shipping. It needs to be prepaid.';
+    });
 
     /* The free-shipping gap is only worth showing if it can be acted on. */
     var note = $('[data-ship-note]');
@@ -400,6 +486,8 @@
           if (CAT[k].bundle || bag[k]) return;
           if (CAT[k].price >= gap && (!pick || CAT[k].price < CAT[pick].price)) pick = k;
         });
+        /* Offering a 799 add to save 69 is not a nudge, it is an insult. */
+        if (pick && CAT[pick].price > gap * 2) pick = null;
       }
       gapBtn.hidden = !pick;
       if (pick) {
@@ -414,8 +502,36 @@
     if (side) side.hidden = keys.length === 0;
     if (extras) extras.hidden = keys.length === 0;
 
-    var checkoutBtn = $('[data-checkout]');
-    if (checkoutBtn) checkoutBtn.classList.toggle('is-off', keys.length === 0);
+    /* There are two of these now — the one on the page and the one in the
+       sticky bar — so both have to be told. */
+    $$('[data-checkout]').forEach(function (btn) { btn.classList.toggle('is-off', keys.length === 0); });
+    var bar = $('.stickybar');
+    if (bar) bar.hidden = keys.length === 0;
+
+    /* If the bag already holds every part of a routine, say so. Letting
+       somebody pay 548 rupees more for the same three bottles, and find out
+       afterwards, is the kind of thing that loses a customer permanently. */
+    var upsell = $('[data-bundle-upsell]');
+    if (upsell) {
+      var match = null;
+      Object.keys(CAT).forEach(function (k) {
+        var b = CAT[k];
+        if (!b.bundle || bag[k] || match) return;
+        var has = b.parts && b.parts.every(function (part) { return bag[part] > 0; });
+        if (!has) return;
+        var paying = b.parts.reduce(function (t, part) { return t + CAT[part].price; }, 0);
+        if (paying > b.price) match = { slug: k, b: b, save: paying - b.price };
+      });
+      upsell.hidden = !match;
+      if (match) {
+        upsell.innerHTML =
+          '<p class="upsell__h">Those three are a routine.</p>' +
+          '<p class="upsell__p">' + match.b.name + ' holds the same ' + match.b.parts.length +
+          ' products for ' + inr(match.b.price) + ' \u2014 <b>' + inr(match.save) + ' less</b> than buying them separately.</p>' +
+          '<button class="btn btn--sm" type="button" data-swap-bundle="' + match.slug + '">' +
+          'Swap to the routine, save ' + inr(match.save) + '</button>';
+      }
+    }
 
     /* Cross-sell only what is not already in the bag. */
     var csRail = $('[data-crosssell]');
@@ -446,7 +562,7 @@
             '<button type="button" data-line-step="1" data-slug="' + k + '" aria-label="Increase quantity of ' + p.name + '">+</button>' +
           '</div>' +
           '<button class="line__rm" type="button" data-line-rm="' + k + '" aria-label="Remove ' + p.name + ' from bag">Remove</button>';
-      var was = p.rrp ? '<span class="line__was">' + inr(p.rrp) + '</span>' : '';
+      var was = p.rrp ? '<span class="line__was">' + inr(p.rrp * n) + '</span>' : '';
       return '<article class="line">' +
         '<a class="line__fig" href="' + p.url + '" tabindex="-1" aria-hidden="true"><img src="assets/opt/' + p.img + '-sm.webp" alt="" width="600" height="750" loading="lazy" decoding="async"></a>' +
         '<div class="line__body"><h3 class="line__name"><a href="' + p.url + '">' + p.name + '</a></h3>' +
@@ -480,7 +596,22 @@
       return;
     }
     var undo = e.target.closest('[data-toast-act]');
-    if (undo && toastAct) { var fn = toastAct; toastAct = null; fn(); }
+    if (undo && toastAct) { var fn = toastAct; toastAct = null; fn(); return; }
+
+    var swap = e.target.closest('[data-swap-bundle]');
+    if (swap) {
+      var slug = swap.getAttribute('data-swap-bundle');
+      var before = JSON.parse(JSON.stringify(bag));
+      CAT[slug].parts.forEach(function (part) {
+        bag[part] -= 1;
+        if (bag[part] <= 0) delete bag[part];
+      });
+      bag[slug] = (bag[slug] || 0) + 1;
+      saveBag(); paintHeader(); paintCart(); bump();
+      say('Swapped to ' + CAT[slug].name, { label: 'Undo', act: function () {
+        bag = before; saveBag(); paintHeader(); paintCart(); say('Put back as separate products');
+      } });
+    }
   });
 
   $$('input[name="pay"]').forEach(function (r) {
@@ -504,59 +635,37 @@
     }, true);
   }
 
-  /* --- Serviceability ----------------------------------------------------
-     The shipping policy promises a PIN-code check, so the site runs one.
-     Metro sorting hubs clear in 2–4 working days; everywhere else 4–7.
-     A handful of far-route PINs are prepaid-only, which is how couriers
-     actually operate. */
-  var METRO = ['110','400','560','600','700','500','411','380','395','122','201','641','682','302'];
-  var NO_COD = ['190','191','192','193','194','737','790','791','792','793','794','795','796','797','798','799','744'];
-  var WORKDAYS = function (n) {
-    var d = new Date(), added = 0;
-    while (added < n) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0) added++; }
-    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
-  };
-  var lookupPin = function (pin) {
-    if (!/^[1-9][0-9]{5}$/.test(pin)) return null;
-    var p3 = pin.slice(0, 3);
-    var metro = METRO.indexOf(p3) > -1;
-    return {
-      pin: pin,
-      cod: NO_COD.indexOf(p3) === -1,
-      lo: metro ? 2 : 4,
-      hi: metro ? 4 : 7,
-      by: WORKDAYS(metro ? 4 : 7)
-    };
-  };
-  var lastPin = (function () {
-    try { return store ? (store.getItem('eyvePin') || '') : ''; } catch (e) { return ''; }
-  })();
-
-  $$('[data-pin-form]').forEach(function (form) {
-    var input = $('input', form);
-    var out = $('[data-pin-out]', form.parentNode) || $('[data-pin-out]', form);
-    var render = function (r, typed) {
-      if (!out) return;
-      if (!r) {
-        out.className = 'pincheck__out is-bad';
-        out.textContent = typed ? 'That is not a valid Indian PIN code.' : '';
-        return;
-      }
-      out.className = 'pincheck__out is-ok';
-      out.innerHTML = '<b>Delivers to ' + r.pin + '</b> in ' + r.lo + '\u2013' + r.hi +
-        ' working days \u2014 by <b>' + r.by + '</b>.' +
-        (r.cod ? ' Cash on delivery available.'
-               : ' <span class="pincheck__warn">Prepaid only on this route.</span>');
-    };
-    if (input && lastPin) { input.value = lastPin; render(lookupPin(lastPin), false); }
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var v = (input.value || '').trim();
+  /* The PIN the buyer types at checkout is the one that decides the route, so
+     it replaces whatever was stored and re-gates cash on delivery live. */
+  var coPin = $('#coPin'), coPinOut = $('[data-co-pin-out]');
+  if (coPin) {
+    if (!coPin.value && lastPin) coPin.value = lastPin;
+    var paintCoPin = function () {
+      var v = (coPin.value || '').trim();
       var r = lookupPin(v);
-      if (r) { lastPin = v; try { if (store) store.setItem('eyvePin', v); } catch (x) {} }
-      render(r, true);
-    });
-  });
+      if (r) {
+        lastPin = v;
+        try { if (store) store.setItem('eyvePin', v); } catch (e) {}
+      } else if (v.length === 6) {
+        lastPin = '';
+      }
+      if (coPinOut) {
+        if (!v) { coPinOut.textContent = ''; coPinOut.className = 'pincheck__out'; }
+        else if (!r) {
+          coPinOut.className = 'pincheck__out' + (v.length >= 6 ? ' is-bad' : '');
+          coPinOut.textContent = v.length >= 6 ? 'We do not recognise that PIN code.' : '';
+        } else {
+          coPinOut.className = 'pincheck__out is-ok';
+          coPinOut.innerHTML = 'Arrives in ' + r.lo + '\u2013' + r.hi + ' working days \u2014 by <b>' + r.by + '</b>.' +
+            (r.cod ? '' : ' <span class="pincheck__warn">This route is prepaid only.</span>');
+        }
+      }
+      paintCart();
+    };
+    coPin.addEventListener('input', paintCoPin);
+    coPin.addEventListener('change', paintCoPin);
+    paintCoPin();
+  }
 
   /* --- Promotion code ---------------------------------------------------- */
   $$('[data-promo-form]').forEach(function (form) {
@@ -583,7 +692,12 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var code = (input.value || '').trim().toUpperCase();
-      if (!PROMOS[code]) { render('That code is not one of ours.', false); return; }
+      if (!PROMOS[code]) {
+        render(promo
+          ? 'That code is not one of ours. <b>' + promo + '</b> is still applied.'
+          : 'That code is not one of ours.', false);
+        return;
+      }
       promo = code; savePromo(); paintCart(); paintApplied();
       say(code + ' applied');
     });
@@ -602,6 +716,8 @@
       co.hidden = true;
       var side = $('#coSide');
       if (side) side.hidden = true;
+      var panel = side && side.closest('.section');
+      if (panel) panel.hidden = true;
       var host = $('#coEmpty');
       if (host) host.hidden = false;
       else {
@@ -620,18 +736,77 @@
         f.closest('.fld').classList.toggle('is-bad', bad);
         if (bad && !invalid) invalid = f;
       });
+      /* The pattern only proves six digits. A PIN also has to be a real one. */
+      if (coPin && !lookupPin((coPin.value || '').trim())) {
+        var fld = coPin.closest('.fld');
+        if (fld) fld.classList.add('is-bad');
+        if (!invalid) invalid = coPin;
+      }
       if (invalid) { invalid.focus(); say('Please check the highlighted fields'); return; }
       if (!bagCount()) { say('Your bag is empty'); return; }
       var order = 'EYV-' + String(Date.now()).slice(-6);
-      if (store) store.setItem('eyveOrder', order);
+      if (store) {
+        store.setItem('eyveOrder', order);
+        /* Keep a copy of what was bought so the confirmation is a receipt
+           rather than an order number on an empty page. */
+        try {
+          store.setItem('eyveReceipt', JSON.stringify({
+            lines: Object.keys(bag).filter(function (k) { return bag[k] > 0 && CAT[k]; })
+                     .map(function (k) { return { k: k, n: bag[k] }; }),
+            promo: promo, disc: discount(), sub: subtotal(),
+            ship: shipping(), cod: (codOn() ? COD : 0), pin: lastPin,
+            pay: (($('input[name="pay"]:checked') || {}).value || 'upi')
+          }));
+        } catch (x) {}
+      }
       bag = {}; saveBag();
+      promo = ''; savePromo();          /* a welcome offer is used once */
       window.location.href = 'order-confirmed.html';
     });
+    var gst = $('#coGstin') || $('input[name="gstin"]', co);
+    if (gst) {
+      gst.addEventListener('input', function () {
+        var at = gst.selectionStart;
+        gst.value = gst.value.toUpperCase();
+        try { gst.setSelectionRange(at, at); } catch (e) {}
+      });
+    }
     $$('.fld input, .fld select', co).forEach(function (f) {
       var clear = function () { f.closest('.fld').classList.remove('is-bad'); };
       f.addEventListener('input', clear);
       f.addEventListener('change', clear);
     });
+  }
+
+  /* --- Confirmation ------------------------------------------------------ */
+  var receiptEl = $('[data-receipt]');
+  if (receiptEl) {
+    var r = null;
+    try { r = JSON.parse((store && store.getItem('eyveReceipt')) || 'null'); } catch (e) {}
+    if (r && r.lines && r.lines.length) {
+      var total = Math.max(0, r.sub - (r.disc || 0)) + (r.ship || 0) + (r.cod || 0);
+      receiptEl.innerHTML =
+        '<h2 class="h3">What you ordered</h2>' +
+        '<div class="receipt__lines">' + r.lines.map(function (l) {
+          var p = CAT[l.k]; if (!p) return '';
+          return '<div class="receipt__line"><span>' + p.name +
+                 (l.n > 1 ? ' \u00d7 ' + l.n : '') + '</span><span>' + inr(p.price * l.n) + '</span></div>';
+        }).join('') + '</div>' +
+        '<dl class="cart__sum">' +
+          '<div><dt>Subtotal</dt><dd>' + inr(r.sub) + '</dd></div>' +
+          (r.disc ? '<div class="sum__disc"><dt>Code ' + (r.promo || '') + '</dt><dd>\u2212' + inr(r.disc) + '</dd></div>' : '') +
+          '<div><dt>Shipping</dt><dd>' + (r.ship ? inr(r.ship) : 'Free') + '</dd></div>' +
+          (r.cod ? '<div><dt>Cash-on-delivery handling</dt><dd>' + inr(r.cod) + '</dd></div>' : '') +
+          '<div class="cart__sum-total"><dt>' + (r.cod ? 'To pay on delivery' : 'Paid') + '</dt><dd>' + inr(total) + '</dd></div>' +
+        '</dl>';
+      var est = r.pin && lookupPin(r.pin);
+      var estEl = $('[data-receipt-eta]');
+      if (estEl && est) {
+        estEl.innerHTML = 'Delivering to <b>' + r.pin + '</b> in ' + est.lo + '\u2013' + est.hi +
+                          ' working days \u2014 by <b>' + est.by + '</b>.';
+        estEl.hidden = false;
+      }
+    }
   }
 
   var ordNo = $('#ordNo');

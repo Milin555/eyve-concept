@@ -2339,3 +2339,56 @@ blockquote { hanging-punctuation: first last; }
   pointer-events: none;
 }
 @media (max-width: 760px) { .reels::after { width: 32px; } }
+
+/* A bag that already holds a whole routine should say so before it is paid for. */
+.upsell {
+  margin-top: var(--s-3); padding: var(--s-3);
+  background: var(--indigo-wash); border-left: 2px solid var(--indigo);
+}
+.upsell__h { font-family: var(--display); font-size: var(--t-h3); font-weight: 300; }
+.upsell__p { margin-top: 0.5rem; font-size: var(--t-s); color: var(--ink-soft); line-height: 1.6; }
+.upsell__p b { color: var(--indigo); font-weight: 500; }
+.upsell .btn { margin-top: var(--s-2); }
+
+/* The confirmation page is a receipt, not an order number on an empty page. */
+.receipt__lines { margin-top: var(--s-2); border-top: 1px solid var(--line); }
+.receipt__line {
+  display: flex; justify-content: space-between; gap: var(--s-2);
+  padding: 0.7rem 0; border-bottom: 1px solid var(--line-soft);
+  font-size: var(--t-s);
+}
+.receipt__line span:last-child { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* --- Sticky commerce bar (phones) ---------------------------------------
+   On a phone the pay button sat three and a half screens below the fold with
+   no running total in sight. The bar carries both to the thumb. */
+.stickybar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  display: none; align-items: center; gap: var(--s-2);
+  padding: 0.7rem var(--gutter) calc(0.7rem + env(safe-area-inset-bottom));
+  background: var(--on-dark-glass);
+  border-top: 1px solid var(--line);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.stickybar__sum { flex: 1 1 auto; min-width: 0; }
+.stickybar__lbl {
+  font-family: var(--mono); font-size: var(--t-label-sm); letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-mute); display: block;
+}
+.stickybar__n {
+  font-family: var(--mono); font-size: var(--t-l); font-variant-numeric: tabular-nums;
+  display: block; margin-top: 0.1rem;
+}
+.stickybar .btn { flex: 0 0 auto; }
+@media (max-width: 860px) {
+  .stickybar { display: flex; }
+  body:has(.stickybar) .ftr { padding-bottom: 5.5rem; }
+}
+@media (prefers-reduced-motion: reduce) { .stickybar { backdrop-filter: none; background: var(--paper); } }
+
+.receipt { margin-block: var(--s-4); text-align: left; }
+.conf__eta {
+  margin-top: var(--s-2); font-size: var(--t-m); color: var(--ink-soft);
+}
+.conf__eta b { color: var(--ink); font-weight: 500; }
