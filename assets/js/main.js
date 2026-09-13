@@ -812,8 +812,16 @@
   var ordNo = $('#ordNo');
   if (ordNo) {
     var o = store && store.getItem('eyveOrder');
-    if (o) { ordNo.textContent = o; }
-    else { window.location.replace('index.html'); }
+    if (o) {
+      ordNo.textContent = o;
+      /* Arriving here means the order left the bag. Reaching this page with
+         items still in it — by a back button, a reload, a shared link —
+         should not leave a badge claiming they are still waiting. */
+      if (bagCount()) { bag = {}; saveBag(); }
+      promo = ''; savePromo();
+    } else {
+      window.location.replace('index.html');
+    }
     paintHeader();
   }
 

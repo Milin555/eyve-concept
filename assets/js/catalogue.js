@@ -54,7 +54,7 @@ window.EYVE_CATALOGUE = {
     "rrp": 3197,
     "img": "life-serum-box",
     "size": "Three steps",
-    "url": "protocol.html#pigment-set",
+    "url": "pigment-routine.html",
     "bundle": true,
     "parts": ["cleanser", "serum", "sunscreen"]
   },
@@ -64,7 +64,7 @@ window.EYVE_CATALOGUE = {
     "rrp": 2822,
     "img": "life-cleanser-cream",
     "size": "Three steps",
-    "url": "protocol.html#barrier-set",
+    "url": "barrier-routine.html",
     "bundle": true,
     "parts": ["cleanser", "moisturiser", "sunscreen"]
   }
