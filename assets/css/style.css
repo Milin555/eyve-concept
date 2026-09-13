@@ -1290,18 +1290,48 @@ table { border-collapse: collapse; width: 100%; }
 @media (max-width: 680px) {
   :root { --rail: 132px; }
   .hdr__nav { display: none; }
+  /* An overlay with a ground of its own and a scrim behind it. It used to push
+     the page down in flow, which reads as "the header got taller", not as a
+     menu you can close. */
   .topbar.is-open .hdr__nav {
+    position: fixed;
+    inset: var(--rail) 0 auto 0;
     display: flex;
     flex-direction: column;
-    gap: var(--s-2);
-    padding: var(--s-2) var(--gutter) var(--s-3);
-    background: var(--paper);
+    align-items: stretch;
+    gap: 0;
+    padding: var(--s-3) var(--gutter) var(--s-4);
+    background: var(--white);
     border-top: 1px solid var(--line-soft);
-    order: 3;
-    flex-basis: 100%;
+    box-shadow: 0 24px 48px -24px rgba(10, 11, 30, 0.35);
+    z-index: 82;
+    max-height: calc(100dvh - var(--rail));
+    overflow-y: auto;
+    animation: menuIn 260ms var(--ease-out) both;
   }
-  .topbar.is-open .hdr__in { flex-wrap: wrap; height: auto; padding-bottom: 0; }
-  .topbar.is-open .hdr__nav a { padding-block: 0.6rem; }
+  .topbar.is-open .hdr__nav a {
+    display: block;
+    width: 100%;
+    padding-block: 0.95rem;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: var(--t-h3);
+    font-family: var(--display);
+    font-weight: 300;
+    letter-spacing: var(--tr-tight);
+    text-transform: none;
+  }
+  .topbar.is-open .hdr__nav a:last-child { border-bottom: 0; }
+  .topbar.is-open .hdr__nav a::after { display: none; }
+  .topbar.is-open::after {
+    content: "";
+    position: fixed; inset: var(--rail) 0 0 0;
+    background: rgba(10, 11, 30, 0.42);
+    backdrop-filter: blur(3px);
+    z-index: 80;
+    animation: menuScrim 260ms var(--ease-op) both;
+  }
+  @keyframes menuIn { from { opacity: 0; transform: translateY(-8px) } }
+  @keyframes menuScrim { from { opacity: 0 } }
   .hdr__burger {
     display: inline-flex; align-items: center; justify-content: center;
     width: 40px; height: 40px; border: 1px solid var(--line);
@@ -1903,7 +1933,7 @@ table { border-collapse: collapse; width: 100%; }
 
 @media (min-width: 1700px) { :root { --maxw: 1560px; --gutter: 4rem; } }
 @media (max-width: 520px) {
-  .ticker { font-size: var(--t-label-sm); letter-spacing: var(--tr-mono); }
+  .ticker { font-size: var(--t-label-sm); letter-spacing: var(--tr-mono-sm); padding-inline: var(--s-2); }
   .prods__grid { grid-template-columns: repeat(2, 1fr); column-gap: 0.9rem; row-gap: var(--s-4); }
   .pcard__name { font-size: var(--t-small); min-height: 3.2rem; }
   .pcard__spec { font-size: var(--t-label-sm); }
@@ -2013,8 +2043,8 @@ html.is-locked { overflow: hidden; }
 .reelv.is-open { display: grid; }
 .reelv__scrim {
   position: absolute; inset: 0;
-  background: rgba(8, 9, 26, 0.92);
-  backdrop-filter: blur(10px);
+  background: rgba(6, 7, 20, 0.97);
+  backdrop-filter: blur(18px) saturate(0.7);
   animation: reelvIn var(--dur-fast) var(--ease-op) both;
 }
 .reelv__panel {
@@ -2043,10 +2073,10 @@ html.is-locked { overflow: hidden; }
   transition: background var(--dur-fast) var(--ease-op), border-color var(--dur-fast) var(--ease-op);
 }
 .reelv__btn:hover { background: rgba(251, 250, 252, 0.14); border-color: var(--on-dark-rule); }
-.reelv__close { position: absolute; top: calc(-1 * var(--s-3) - 8px); right: 0; }
+.reelv__close { position: absolute; top: calc(-1 * var(--s-3) - 14px); right: -6px; }
 .reelv__nav { position: absolute; top: 50%; margin-top: -22px; z-index: 2; }
-.reelv__nav--prev { left: clamp(-64px, -5vw, -14px); }
-.reelv__nav--next { right: clamp(-64px, -5vw, -14px); }
+.reelv__nav--prev { left: -62px; }
+.reelv__nav--next { right: -62px; }
 
 @keyframes reelvIn { from { opacity: 0 } to { opacity: 1 } }
 @keyframes reelvUp { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
@@ -2057,8 +2087,11 @@ html.is-locked { overflow: hidden; }
   .reelv__panel { width: 100%; height: 100%; align-content: center; padding: 0 12px; }
   .reelv__stage { max-height: 74vh; border-radius: 0; }
   .reelv__close { top: 12px; right: 12px; position: fixed; }
-  .reelv__nav--prev { left: 4px; }
-  .reelv__nav--next { right: 4px; }
+  /* Inside the frame on a phone — there is no margin to orbit into. */
+  .reelv__nav { position: fixed; top: auto; bottom: calc(16px + env(safe-area-inset-bottom)); margin-top: 0; }
+  .reelv__nav--prev { left: 16px; right: auto; }
+  .reelv__nav--next { right: 16px; left: auto; }
+  .reelv__meta { padding-inline: 76px; text-align: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2453,3 +2486,32 @@ blockquote { hanging-punctuation: first last; }
   /* and the band it hangs into has to make room for it */
   .reels { position: relative; padding-top: calc(var(--s-section) + clamp(2.5rem, 6vw, 6rem)); }
 }
+
+/* Sound and progress, because a video player with only prev/next/close is not
+   a player. Both sit with the caption so the controls read as one group. */
+.reelv__bar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: var(--on-dark-line); overflow: hidden;
+}
+.reelv__bar i {
+  display: block; height: 100%; width: 100%;
+  background: var(--sand); transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform 120ms linear;
+}
+.reelv__sound {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.45rem;
+  background: none; border: 1px solid var(--on-dark-line); border-radius: 999px;
+  color: var(--on-dark-2); cursor: pointer; padding: 0.35rem 0.75rem;
+  font-family: var(--mono); font-size: var(--t-label-sm);
+  letter-spacing: var(--tr-mono); text-transform: uppercase;
+}
+.reelv__sound:hover { border-color: var(--on-dark-rule); color: var(--on-dark); }
+.reelv__sound[aria-pressed="true"] { border-color: var(--sand); color: var(--sand); }
+
+@media (prefers-reduced-motion: reduce) {
+  .topbar.is-open .hdr__nav, .topbar.is-open::after { animation: none; }
+}
+
+/* The announcement carries three clauses. On a phone that is three centred
+   lines, so the middle one — the least commercial — steps out. */
+@media (max-width: 700px) { .ticker__mid { display: none; } .ticker__mid + .ticker__sep { display: none; } }

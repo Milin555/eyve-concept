@@ -125,6 +125,8 @@
     var setMenu = function (open) {
       topbar.classList.toggle('is-open', open);
       burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      /* An overlay that leaves the page scrolling underneath is a dropdown. */
+      document.documentElement.classList.toggle('is-locked', open);
       measureRail();
     };
     burger.addEventListener('click', function () {
@@ -132,6 +134,11 @@
     });
     nav.addEventListener('click', function (e) { if (e.target.tagName === 'A') setMenu(false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
+    /* The scrim is a pseudo-element on .topbar, so a click that lands on the
+       bar itself but outside the nav is a click on the scrim. */
+    topbar.addEventListener('click', function (e) {
+      if (e.target === topbar && topbar.classList.contains('is-open')) setMenu(false);
+    });
   }
 
   /* --- Reveal -----------------------------------------------------------
@@ -943,12 +950,31 @@
     var stage = viewer && $('[data-reel-stage]', viewer);
     var capEl = viewer && $('[data-reel-caption]', viewer);
     var idxEl = viewer && $('[data-reel-index]', viewer);
+    var barEl = viewer && $('[data-reel-bar]', viewer);
+    var soundEl = viewer && $('[data-reel-sound]', viewer);
     var current = -1, lastFocus = null, video = null;
+    /* Sound preference lives for as long as the viewer is open and no longer.
+       A video that starts loud because of something you did five minutes ago
+       is a defect, not a convenience. */
+    var wantSound = false;
+
+    var paintSound = function () {
+      if (!soundEl) return;
+      soundEl.setAttribute('aria-pressed', wantSound ? 'true' : 'false');
+      soundEl.textContent = wantSound ? 'Sound off' : 'Sound on';
+    };
 
     var teardown = function () {
-      if (video) { video.pause(); video.removeAttribute('src'); video.load(); }
-      if (stage) stage.innerHTML = '';
+      /* Release the buffer, but leave the stage furniture alone — the progress
+         bar lives there and must survive between reels. */
+      if (video) {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+        if (video.parentNode) video.parentNode.removeChild(video);
+      }
       video = null;
+      if (barEl) barEl.style.transform = 'scaleX(0)';
     };
 
     var mount = function (i) {
@@ -964,11 +990,17 @@
       video.setAttribute('preload', 'auto');
       video.controls = true;
       video.loop = true;
-      video.muted = true;                    /* muted so autoplay is permitted */
+      video.muted = !wantSound;              /* muted start is what autoplay allows */
       video.className = 'reelv__video';
-      stage.appendChild(video);
+      video.addEventListener('timeupdate', function () {
+        if (!barEl || !video.duration) return;
+        barEl.style.transform = 'scaleX(' + (video.currentTime / video.duration) + ')';
+      });
+      if (barEl) barEl.style.transform = 'scaleX(0)';
+      stage.insertBefore(video, stage.firstChild);
       var p = video.play();
       if (p && p.catch) p.catch(function () { /* user will press play */ });
+      paintSound();
       if (capEl) capEl.textContent = card.getAttribute('data-caption') || '';
       if (idxEl) idxEl.textContent = (i + 1) + ' / ' + reelCards.length;
       reelCards.forEach(function (c, n) { c.setAttribute('aria-selected', n === i ? 'true' : 'false'); });
@@ -976,6 +1008,8 @@
 
     var closeViewer = function () {
       teardown();
+      wantSound = false;
+      paintSound();
       viewer.classList.remove('is-open');
       viewer.setAttribute('aria-hidden', 'true');
       document.documentElement.classList.remove('is-locked');
@@ -1006,14 +1040,30 @@
       viewer.addEventListener('click', function (e) {
         if (e.target.closest('[data-reel-close]') || e.target === viewer ||
             e.target.hasAttribute('data-reel-scrim')) { closeViewer(); return; }
-        if (e.target.closest('[data-reel-prev]')) step(-1);
-        if (e.target.closest('[data-reel-next]')) step(1);
+        if (e.target.closest('[data-reel-prev]')) { step(-1); return; }
+        if (e.target.closest('[data-reel-next]')) { step(1); return; }
+        if (e.target.closest('[data-reel-sound]')) {
+          wantSound = !wantSound;
+          if (video) video.muted = !wantSound;
+          paintSound();
+          return;
+        }
+        /* Tapping the video itself pauses and resumes it. */
+        if (video && e.target === video) { video.paused ? video.play() : video.pause(); }
       });
       document.addEventListener('keydown', function (e) {
         if (!viewer.classList.contains('is-open')) return;
         if (e.key === 'Escape') { e.preventDefault(); closeViewer(); }
         else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
         else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+        else if (e.key === 'm' || e.key === 'M') {
+          wantSound = !wantSound;
+          if (video) video.muted = !wantSound;
+          paintSound();
+        }
+        else if (e.key === ' ') {
+          if (video) { e.preventDefault(); video.paused ? video.play() : video.pause(); }
+        }
         else if (e.key === 'Tab') {                    /* keep focus inside */
           var f = $$('button, [href], video', viewer).filter(function (el) {
             return el.offsetParent !== null;

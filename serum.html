@@ -55,7 +55,7 @@
   <img class="intro__mark" src="assets/opt/logo.webp" alt="" width="260" height="146">
 </div>
 <div class="topbar">
-<div class="ticker">Free shipping from ₹999 · Cash on Delivery on most routes · First order <b>15% lighter</b> with code <b>WELCOME15</b></div>
+<div class="ticker">Free shipping from ₹999<span class="ticker__sep"> · </span><span class="ticker__mid">Cash on Delivery on most routes</span><span class="ticker__sep"> · </span>First order <b>15% lighter</b> with code <b>WELCOME15</b></div>
 <header class="hdr" id="hdr">
   <div class="shell hdr__in">
     <a class="hdr__logo" href="index.html" aria-label="EYVE home">
@@ -365,6 +365,29 @@
   </div>
 </footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/catalogue.js"></script>
+<div class="reelv" id="reelViewer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Video">
+  <div class="reelv__scrim" data-reel-scrim></div>
+  <div class="reelv__panel">
+    <button class="reelv__btn reelv__close" type="button" data-reel-close aria-label="Close video">
+      <svg width="13" height="13" viewBox="0 0 13 13" aria-hidden="true"><path d="M1 1l11 11M12 1L1 12" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+    </button>
+    <button class="reelv__btn reelv__nav reelv__nav--prev" type="button" data-reel-prev aria-label="Previous video">
+      <svg width="8" height="13" viewBox="0 0 8 13" aria-hidden="true"><path d="M7 1L1 6.5 7 12" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+    </button>
+    <button class="reelv__btn reelv__nav reelv__nav--next" type="button" data-reel-next aria-label="Next video">
+      <svg width="8" height="13" viewBox="0 0 8 13" aria-hidden="true"><path d="M1 1l6 5.5L1 12" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+    </button>
+    <div class="reelv__stage" data-reel-stage>
+      <span class="reelv__bar" aria-hidden="true"><i data-reel-bar></i></span>
+    </div>
+    <div class="reelv__meta">
+      <p class="reelv__cap" data-reel-caption></p>
+      <button class="reelv__sound" type="button" data-reel-sound aria-pressed="false">Sound on</button>
+      <span class="reelv__idx" data-reel-index></span>
+    </div>
+  </div>
+</div>
 <script src="assets/js/catalogue.js"></script>
 <div class="reelv" id="reelViewer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Video">
   <div class="reelv__scrim" data-reel-scrim></div>
