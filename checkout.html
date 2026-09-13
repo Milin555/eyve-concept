@@ -28,7 +28,7 @@
   <img class="intro__mark" src="assets/opt/logo.webp" alt="" width="260" height="146">
 </div>
 <div class="topbar">
-<div class="ticker">Free shipping over ₹999 · Cash on Delivery available across India</div>
+<div class="ticker">Free shipping over ₹999 · Cash on Delivery across India · First order <b>15% lighter</b> with code <b>WELCOME15</b></div>
 <header class="hdr" id="hdr">
   <div class="shell hdr__in">
     <a class="hdr__logo" href="index.html" aria-label="EYVE home">
@@ -67,44 +67,114 @@
     <h1 class="display h2 sh-t">Checkout</h1>
   </div>
   <section class="section section--tight">
+    <div class="shell">
+      <div class="co__empty conf__in">
+        <h2 class="h3">What you are paying for</h2>
+        <div id="coLines" class="co__lines"></div>
+        <dl class="cart__sum">
+          <div><dt>Subtotal</dt><dd data-sum-sub>₹0</dd></div>
+          <div class="sum__disc" data-disc-row hidden><dt>Code <span data-disc-code></span></dt><dd data-sum-disc>−₹0</dd></div>
+          <div><dt>Shipping</dt><dd data-sum-ship>—</dd></div>
+          <div data-cod-row hidden><dt>Cash-on-delivery handling</dt><dd data-sum-cod>₹49</dd></div>
+          <div class="cart__sum-total"><dt>Total</dt><dd data-sum-total>₹0</dd></div>
+        </dl>
+        <div class="promo">
+          <form class="promo__row" data-promo-form novalidate>
+            <label class="visually-hidden" for="promo-checkout">Promotion code</label>
+            <input id="promo-checkout" type="text" placeholder="Promotion code" autocomplete="off" spellcheck="false">
+            <button type="submit">Apply</button>
+          </form>
+          <p class="promo__out" data-promo-out role="status"></p>
+        </div>
+      </div>
+    </div>
     <form class="shell cart__grid" id="checkoutForm" novalidate>
       <div class="co">
         <fieldset class="co__set">
           <legend class="h3">Contact</legend>
-          <div class="fld"><label for="coEmail">Email</label><input id="coEmail" name="email" type="email" autocomplete="email" pattern="[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}" required></div>
-          <div class="fld"><label for="coPhone">Mobile number</label><input id="coPhone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" pattern="[0-9]{10}" required><small>Ten digits. We use this for delivery updates on WhatsApp.</small></div>
+          <div class="fld"><label for="coEmail">Email</label><input id="coEmail" name="email" type="email" autocomplete="email" pattern="[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}" required><small>The order confirmation and the invoice go here.</small></div>
+          <div class="fld"><label for="coPhone">Mobile number</label><input id="coPhone" name="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel-national" pattern="[6-9][0-9]{9}" required><small>Ten digits, starting 6, 7, 8 or 9. We use this for delivery updates on WhatsApp.</small></div>
         </fieldset>
         <fieldset class="co__set">
           <legend class="h3">Delivery address</legend>
           <div class="fld"><label for="coName">Full name</label><input id="coName" name="name" autocomplete="name" required></div>
-          <div class="fld"><label for="coAddr">Address</label><input id="coAddr" name="address" autocomplete="street-address" required></div>
+          <div class="fld"><label for="coAddr">House number and street</label><input id="coAddr" name="address" autocomplete="address-line1" required></div>
+          <div class="fld"><label for="coAddr2">Flat, building or landmark <span class="opt">optional</span></label><input id="coAddr2" name="address2" autocomplete="address-line2"></div>
           <div class="fld-row">
             <div class="fld"><label for="coCity">City</label><input id="coCity" name="city" autocomplete="address-level2" required></div>
-            <div class="fld"><label for="coState">State</label><input id="coState" name="state" autocomplete="address-level1" required></div>
-            <div class="fld"><label for="coPin">PIN code</label><input id="coPin" name="pin" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{6}" required></div>
+            <div class="fld"><label for="coState">State</label><select id="coState" name="state" autocomplete="address-level1" required>
+              <option value="">Select a state</option>
+              <optgroup label="States">
+                <option>Andhra Pradesh</option>
+                <option>Arunachal Pradesh</option>
+                <option>Assam</option>
+                <option>Bihar</option>
+                <option>Chhattisgarh</option>
+                <option>Goa</option>
+                <option>Gujarat</option>
+                <option>Haryana</option>
+                <option>Himachal Pradesh</option>
+                <option>Jharkhand</option>
+                <option>Karnataka</option>
+                <option>Kerala</option>
+                <option>Madhya Pradesh</option>
+                <option>Maharashtra</option>
+                <option>Manipur</option>
+                <option>Meghalaya</option>
+                <option>Mizoram</option>
+                <option>Nagaland</option>
+                <option>Odisha</option>
+                <option>Punjab</option>
+                <option>Rajasthan</option>
+                <option>Sikkim</option>
+                <option>Tamil Nadu</option>
+                <option>Telangana</option>
+                <option>Tripura</option>
+                <option>Uttar Pradesh</option>
+                <option>Uttarakhand</option>
+                <option>West Bengal</option>
+              </optgroup>
+              <optgroup label="Union territories">
+                <option>Andaman and Nicobar Islands</option>
+                <option>Chandigarh</option>
+                <option>Dadra and Nagar Haveli and Daman and Diu</option>
+                <option>Delhi</option>
+                <option>Jammu and Kashmir</option>
+                <option>Ladakh</option>
+                <option>Lakshadweep</option>
+                <option>Puducherry</option>
+              </optgroup>
+            </select></div>
+            <div class="fld"><label for="coPin">PIN code</label><input id="coPin" name="pin" inputmode="numeric" maxlength="6" autocomplete="postal-code" pattern="[1-9][0-9]{5}" required></div>
           </div>
         </fieldset>
         <fieldset class="co__set">
           <legend class="h3">Payment</legend>
-          <p class="co__note">You will be taken to Razorpay's secure page to pay. EYVE never sees or stores your card details.</p>
+          <p class="co__note"><b>Express UPI.</b> Choose UPI and you approve a single request inside GPay, PhonePe, Paytm or any UPI app. Nothing to type, no card stored on file, no OTP to sit through — it is the quickest way off this page.</p>
+          <p class="co__note">Whichever you pick, you are taken to Razorpay&rsquo;s secure page to pay. EYVE never sees or stores your card details.</p>
           <div class="pay">
-            <label class="pay__opt"><input type="radio" name="pay" value="upi" checked><span><b>UPI</b>GPay, PhonePe, Paytm or any UPI app</span></label>
+            <label class="pay__opt"><input type="radio" name="pay" value="upi" checked><span><b>UPI — fastest</b>GPay, PhonePe, Paytm or any UPI app. One approval, inside the app.</span></label>
             <label class="pay__opt"><input type="radio" name="pay" value="card"><span><b>Card</b>Credit or debit, processed by Razorpay</span></label>
             <label class="pay__opt"><input type="radio" name="pay" value="netbanking"><span><b>Netbanking</b>All major Indian banks</span></label>
-            <label class="pay__opt"><input type="radio" name="pay" value="cod"><span><b>Cash on Delivery</b>Pay the courier. ₹49 handling fee</span></label>
+            <label class="pay__opt"><input type="radio" name="pay" value="cod"><span><b>Cash on Delivery</b>Pay the courier. ₹49 handling fee, and ₹5,000 is the ceiling</span></label>
           </div>
+          <p class="codcap" data-cod-cap hidden>Cash on delivery is available up to ₹5,000. This order is above that, so it needs to be prepaid.</p>
+        </fieldset>
+        <fieldset class="co__set">
+          <legend class="h3">Invoice and notes</legend>
+          <div class="fld"><label for="coGstin">GSTIN <span class="opt">optional — for a business invoice</span></label><input id="coGstin" name="gstin" maxlength="15" autocomplete="off" spellcheck="false" pattern="[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]"><small>Fifteen characters, in capitals. We raise the invoice against this GSTIN so the input credit is claimable.</small></div>
+          <div class="fld"><label for="coNotes">Anything the courier should know <span class="opt">optional</span></label><textarea id="coNotes" name="notes" rows="3"></textarea><small>Gate codes, a safer delivery window, a neighbour who can take it in.</small></div>
         </fieldset>
       </div>
       <aside class="cart__side">
-        <h2 class="h3">Order summary</h2>
-        <div id="coLines" class="co__lines"></div>
-        <dl class="cart__sum">
-          <div><dt>Subtotal</dt><dd data-sum-sub>₹0</dd></div>
-          <div><dt>Shipping</dt><dd data-sum-ship>—</dd></div>
-          <div data-cod-row hidden><dt>COD handling</dt><dd data-sum-cod>₹49</dd></div>
-          <div class="cart__sum-total"><dt>Total</dt><dd data-sum-total>₹0</dd></div>
-        </dl>
+        <h2 class="h3">Place the order</h2>
         <button class="btn btn--block" type="submit" data-pay>Pay ₹0</button>
+        <ul class="pdp__assure">
+          <li><svg width="13" height="15" viewBox="0 0 13 15" aria-hidden="true" focusable="false"><path d="M6.5 1 12 3.2v4.1c0 3.2-2.3 5.6-5.5 6.6C3.3 12.9 1 10.5 1 7.3V3.2Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg><b>PCI-DSS</b> gateway</li>
+          <li><svg width="13" height="15" viewBox="0 0 13 15" aria-hidden="true" focusable="false"><rect x="1" y="6.2" width="11" height="7.8" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M3.6 6.2V4.3a2.9 2.9 0 0 1 5.8 0v1.9" fill="none" stroke="currentColor" stroke-width="1.2"/></svg><b>TLS encrypted</b></li>
+          <li><svg width="15" height="15" viewBox="0 0 15 15" aria-hidden="true" focusable="false"><path d="M13.4 7.5a5.9 5.9 0 1 1-2-4.4M11.6 1v2.7H8.9" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>14-day returns</b></li>
+          <li><svg width="15" height="15" viewBox="0 0 15 15" aria-hidden="true" focusable="false"><path d="M1.4 7.9 5.6 12 13.6 3.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><b>No card stored</b></li>
+        </ul>
         <p class="co__secure">Payments handled by Razorpay. Your card details never touch our servers.</p>
         <p class="co__terms">By placing this order you agree to our <a href="terms.html">terms</a> and <a href="refund-policy.html">refund policy</a>.</p>
       </aside>
@@ -123,7 +193,7 @@
       <div><h2>Shop</h2><ul><li><a href="cleanser.html">Hydrasyn Ultra-Gentle Cleanser</a></li><li><a href="serum.html">Lipobright Pro Serum</a></li><li><a href="moisturiser.html">Neo-Liposomal Moisturiser</a></li><li><a href="sunscreen.html">Liposhield SPF 50 PA++++</a></li><li><a href="night-cream.html">Revilipo Pro Night Cream</a></li><li><a href="protocol.html">The Protocol</a></li></ul></div>
       <div><h2>Learn</h2><ul>
         <li><a href="science.html">Neo-Liposomal delivery</a></li>
-        <li><a href="about.html">Our founder</a></li>
+        <li><a href="about.html">The founders</a></li>
         <li><a href="faq.html">Questions</a></li>
       </ul></div>
       <div><h2>Support</h2><ul>

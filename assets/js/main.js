@@ -87,13 +87,14 @@
     } else {
       document.documentElement.style.overflow = 'hidden';
       intro.classList.add('is-run');
-      // 450ms in, 450ms hold, 600ms curtain — the hold is what reads as composed
-      setTimeout(function () { intro.classList.add('is-out'); }, 900);
+      // 400ms in, 250ms hold, 450ms curtain. It used to sit on the LCP for a
+      // second and a half; a brand mark is an overture, not an interval.
+      setTimeout(function () { intro.classList.add('is-out'); }, 650);
       setTimeout(function () {
         intro.classList.add('is-done');
         document.documentElement.style.overflow = '';
         try { sessionStorage.setItem('eyveSeen', '1'); } catch (e) {}
-      }, 1500);
+      }, 1100);
     }
   }
 
@@ -333,12 +334,8 @@
        so both respect whatever the stepper says. */
     var usesQty = !!(btn.closest('.pdp__buy') || btn.closest('.buybar'));
     addToBag(btn.getAttribute('data-add'), usesQty && qtyEl ? qty : 1);
-    if (btn.hasAttribute('data-add-label')) {
-      var was = btn.getAttribute('data-add-label');
-      btn.classList.add('is-done');
-      window.setTimeout(function () { btn.classList.remove('is-done'); }, 1500);
-      if (was) { /* label swap is handled in CSS via ::after */ }
-    }
+    btn.classList.add('is-done');
+    window.setTimeout(function () { btn.classList.remove('is-done'); }, 1400);
   });
 
   paintHeader();
@@ -371,6 +368,7 @@
     $$('[data-sum-total]').forEach(function (e) { e.textContent = inr(total); });
     $$('[data-pay]').forEach(function (e) {
       e.textContent = cod ? 'Place order \u2014 ' + inr(total) + ' on delivery' : 'Pay ' + inr(total);
+      e.classList.toggle('is-off', subs === 0);
     });
 
     /* COD has a ceiling, and the ceiling is enforced rather than merely stated. */
@@ -490,6 +488,22 @@
   });
 
 
+
+  /* --- Shared element across pages ---------------------------------------
+     The product photograph is the same object on the grid and on the product
+     page, so it should travel rather than cross-fade. The name is applied to
+     one element at a time — two elements sharing a name abort the transition. */
+  if (document.startViewTransition) {
+    document.addEventListener('click', function (e) {
+      var link = e.target.closest('.pcard__link, .line__fig, .xsell__fig');
+      if (!link || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+      var img = link.querySelector('img');
+      if (!img) return;
+      $$('[style*="view-transition-name"]').forEach(function (el) { el.style.viewTransitionName = ''; });
+      img.style.viewTransitionName = 'product-shot';
+    }, true);
+  }
+
   /* --- Serviceability ----------------------------------------------------
      The shipping policy promises a PIN-code check, so the site runs one.
      Metro sorting hubs clear in 2–4 working days; everywhere else 4–7.
@@ -600,8 +614,9 @@
     co.addEventListener('submit', function (e) {
       e.preventDefault();
       var invalid = null;
-      $$('input[required]', co).forEach(function (f) {
-        var bad = !f.value.trim() || (f.pattern && !new RegExp('^' + f.pattern + '$').test(f.value.trim()));
+      $$('input[required], select[required]', co).forEach(function (f) {
+        var v = (f.value || '').trim();
+        var bad = !v || (f.pattern && !new RegExp('^' + f.pattern + '$').test(v));
         f.closest('.fld').classList.toggle('is-bad', bad);
         if (bad && !invalid) invalid = f;
       });
@@ -612,8 +627,10 @@
       bag = {}; saveBag();
       window.location.href = 'order-confirmed.html';
     });
-    $$('.fld input', co).forEach(function (f) {
-      f.addEventListener('input', function () { f.closest('.fld').classList.remove('is-bad'); });
+    $$('.fld input, .fld select', co).forEach(function (f) {
+      var clear = function () { f.closest('.fld').classList.remove('is-bad'); };
+      f.addEventListener('input', clear);
+      f.addEventListener('change', clear);
     });
   }
 
