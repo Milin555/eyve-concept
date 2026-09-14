@@ -203,20 +203,24 @@
 </header>
 </div>
 <main id="main" class="pg">
-  <div class="shell">
+  <div class="shell pgtop">
     <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><span>Questions</span></nav>
+    <header class="shead">
+        <p class="eyebrow">Help</p>
+        <h1 class="display h1 rv">Questions</h1>
+        <p class="standfirst rv rv-d1">Using the products first, then <a class="tlink" href="#orders">orders, delivery and returns</a>. If your question is not here, write to us and a person will answer it &mdash; there is no form of words we will not give you a straight answer to.</p>
+      </header>
   </div>
   <section class="section section--tight">
-    <div class="shell faq__grid">
+    <div class="shell faq__grid faq__grid--aside">
       <header class="shead">
         <p class="eyebrow">Skin and routine</p>
-        <h1 class="display h2 rv">Questions</h1>
-        <p class="rv rv-d1">Using the products first, then <a class="tlink" href="#orders">orders, delivery and returns</a>. If your question is not here, write to us and a person will answer it.</p>
+        <h2 class="display h2 rv">Using the products</h2>
+        <p class="standfirst rv rv-d1">Order of application, timelines, patch testing, and the two formulations that need a doctor&rsquo;s view first.</p>
       </header>
       <div class="faq__list">
-        <h2 class="visually-hidden">Using the products</h2>
-        <div class="faq__item">
-          <h3><button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a-1">What order should I apply these in?<span class="faq__ic" aria-hidden="true"></span></button></h3>
+        <div class="faq__item is-open">
+          <h3><button class="faq__q" type="button" aria-expanded="true" aria-controls="faq-a-1">What order should I apply these in?<span class="faq__ic" aria-hidden="true"></span></button></h3>
           <div class="faq__a" id="faq-a-1"><div><p>Morning: cleanser, Lipobright Pro serum, moisturiser, sunscreen. Night: cleanser, serum, then Revilipo Pro cream. The serum is twice daily, as its own directions say. Thinnest texture first, heaviest last. Allow each layer sixty seconds to absorb. Sunscreen is always the final morning step.</p></div></div>
         </div>
         <div class="faq__item">
@@ -244,19 +248,28 @@
           <div class="faq__a" id="faq-a-7"><div><p>Used as directed, the cleanser lasts about eight weeks, the serum about six, and the moisturiser, sunscreen and night cream about six to eight. Daily sunscreen at the correct quantity will run out fastest, and that is expected.</p></div></div>
         </div>
       </div>
+      <aside class="faq__aside" aria-labelledby="askA">
+        <h2 class="h3" id="askA">Still stuck?</h2>
+        <p class="faq__aside-p">Write to us and a person answers &mdash; usually within one working day, and always before a template does.</p>
+        <ul class="faq__links">
+          <li><a href="contact.html"><b>Ask the care team</b><span>A reaction, a routine, or an order that has gone quiet</span></a></li>
+          <li><a href="protocol.html"><b>The EYVE Protocol</b><span>All five steps in the order they are used</span></a></li>
+          <li><a href="science.html"><b>How the delivery works</b><span>Why the percentages on our bottles look modest</span></a></li>
+        </ul>
+      </aside>
     </div>
   </section>
 
   <section class="section section--tight section--mist" id="orders">
-    <div class="shell faq__grid">
+    <div class="shell faq__grid faq__grid--aside">
       <header class="shead">
         <p class="eyebrow">Orders and delivery</p>
         <h2 class="display h2 rv">Buying from us</h2>
-        <p class="rv rv-d1">Delivery windows, Cash on Delivery, cancelling, returns and the welcome code. The full wording is in the <a class="tlink" href="shipping-policy.html">shipping</a> and <a class="tlink" href="refund-policy.html">returns</a> policies.</p>
+        <p class="standfirst rv rv-d1">Delivery windows, Cash on Delivery, cancelling, returns and the welcome code. The full wording is in the <a class="tlink" href="shipping-policy.html">shipping</a> and <a class="tlink" href="refund-policy.html">returns</a> policies.</p>
       </header>
       <div class="faq__list">
-        <div class="faq__item">
-          <h3><button class="faq__q" type="button" aria-expanded="false" aria-controls="faq-a-8">How long will delivery take?<span class="faq__ic" aria-hidden="true"></span></button></h3>
+        <div class="faq__item is-open">
+          <h3><button class="faq__q" type="button" aria-expanded="true" aria-controls="faq-a-8">How long will delivery take?<span class="faq__ic" aria-hidden="true"></span></button></h3>
           <div class="faq__a" id="faq-a-8"><div>
             <p>Orders placed before 2pm on a working day are usually dispatched the same day, otherwise within 24&ndash;48 working hours. From dispatch: 2&ndash;4 working days to metro cities, 4&ndash;7 working days elsewhere. Remote PIN codes and festival weeks run longer, and we would rather say so than name a date we cannot hold.</p>
             <div class="pincheck">
@@ -304,6 +317,16 @@
         </div>
         <p class="faq__more"><a class="tlink" href="contact.html">Ask us something else</a></p>
       </div>
+      <aside class="faq__aside" aria-labelledby="askB">
+        <h2 class="h3" id="askB">The full wording</h2>
+        <p class="faq__aside-p">These answers are summaries. Where money or a deadline is involved, the policy is the document that counts.</p>
+        <ul class="faq__links">
+          <li><a href="shipping-policy.html"><b>Shipping policy</b><span>Dispatch windows, Cash on Delivery, remote routes</span></a></li>
+          <li><a href="refund-policy.html"><b>Returns and refunds</b><span>The 14-day window, and what falls outside it</span></a></li>
+          <li><a href="terms.html"><b>Terms of service</b><span>Country of origin, pricing, and what we are liable for</span></a></li>
+          <li><a href="contact.html#grievance"><b>Grievance redressal</b><span>A named officer, 24 hours to acknowledge, 15 days to resolve</span></a></li>
+        </ul>
+      </aside>
     </div>
   </section>
 </main>

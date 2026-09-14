@@ -2911,3 +2911,1306 @@ dd a:not(.tlink):not(.btn):not([class]) {
 @media (max-width: 900px) {
   .pg--utility .ftr__grid { grid-template-columns: 1fr; }
 }
+
+/* ======================================================================
+   PURCHASE FLOW AND LEGAL PAGES
+   cart · checkout · order-confirmed · shipping · refund · privacy · terms
+   ====================================================================== */
+
+/* --- A page title that outranks its own sections -------------------------
+   Every h1 on these seven pages was set in .h2 — 40px, which is the exact
+   size of a section heading everywhere else on the site. The title of the
+   document therefore ranked equal to a subheading inside it, and the site
+   had two heading levels rather than three. This is not a new size: 51.2px
+   is the step .band__h2 and .closing__h2 already occupy. The scale gains
+   nothing; the hierarchy gains a level. */
+.h1 { font-size: clamp(2rem, 3.6vw, 3.2rem); }
+.shead .h1 { margin-top: 1rem; }
+
+/* --- One control height, one control face --------------------------------
+   The bag and the checkout carried four control heights — 44px on the
+   promotion field, 46px on the PIN check, 52.8px on the address fields,
+   54.5px on the pay button — and two typefaces: addresses in the reading
+   serif, PIN and promotion codes in mono. The same act, on the same page,
+   in different objects. One height, and the height chosen is the one the
+   primary button already is, so every control on the page lines up. One
+   face, the reading serif, because the checkout's own PIN field was already
+   set in it and two PIN fields in two faces is the actual inconsistency.
+   Codes keep their capitals: a code should still look like a code. */
+:root { --ctl-h: 3.4rem; }
+
+.fld input, .fld select,
+.pincheck__row input, .promo__row input {
+  height: var(--ctl-h);
+  padding: 0 0.9rem;
+  font-family: var(--serif);
+  font-size: var(--t-m);
+  letter-spacing: var(--tr-tight);
+}
+.fld select { padding-right: 2.6rem; }
+.fld textarea {
+  min-height: calc(var(--ctl-h) * 2);
+  padding: 0.85rem 0.9rem;
+}
+.promo__row input { letter-spacing: var(--tr-mono-sm); }
+.pincheck__row button, .promo__row button { height: var(--ctl-h); }
+
+/* And one width. The promotion field measured 610px at checkout, where it
+   sat in a seven-column grid track, and 272px in the bag, where it sat in a
+   four-column aside — the same field, twice the size, two clicks apart. Both
+   utility rows now measure what the PIN check already measured. */
+.promo__row, .pincheck__row { max-width: 22rem; }
+
+/* --- The checkout summary on a phone -------------------------------------
+   Two line items ran 321px of lines inside a 662px panel: the phone
+   breakpoint drops the price onto a row of its own, and the name, the
+   volume and the quantity each took one of theirs, at a ~55px pitch. The
+   buyer met a screen and a half of what they already knew before reaching
+   the first field they had to fill in.
+
+   A checkout line carries no stepper — the quantity is a printed "× 2", not
+   a control — so it does not need the two-row phone layout the bag's lines
+   genuinely do need. Thumbnail, name, and the price on the same line. */
+@media (max-width: 620px) {
+  .co__lines .line {
+    grid-template-columns: 2.6rem 1fr auto;
+    column-gap: var(--s-2);
+    row-gap: 0;
+    padding: 0.65rem 0;
+    align-items: center;
+  }
+  .co__lines .line__fig { align-self: center; }
+  .co__lines .line__price {
+    grid-column: 3;
+    font-size: var(--t-s);
+    align-self: center;
+  }
+  .co__lines .line__body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.45rem;
+  }
+  .co__lines .line__name { flex: 1 0 100%; font-size: var(--t-s); }
+  .co__lines .line__size { margin-top: 0.2rem; }
+  .co__lines .line__ctl { margin-top: 0.2rem; }
+  .co__lines .line__qty::before { content: "\00b7\00a0"; color: var(--line); }
+
+  /* 16px of margin below the lines and 24px above the totals read as an
+     empty row between two rules. One gap. */
+  #coSide .co__lines { margin-bottom: var(--s-3); min-height: 3.4rem; }
+  #coSide .cart__sum { margin-top: 0; min-height: 0; }
+  #coSide .cart__sum > div { padding: 0.6rem 0; }
+}
+
+/* --- The end of the checkout form ----------------------------------------
+   The form ended on a textarea. The only control that could submit it lived
+   in the aside, so a reader working straight down the column reached the
+   bottom of a 1,751px form and found nothing that finished the job. Below
+   1000px the aside already falls in directly underneath the last field, so
+   this is the desktop case and it is hidden where it would only repeat. */
+.co__end {
+  margin-top: var(--s-4);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+}
+.co__end .btn { width: 100%; justify-content: center; }
+.co__end .co__terms { margin-top: 0.9rem; }
+@media (max-width: 1000px) { .co__end { display: none; } }
+
+/* --- Lists in the legal documents ----------------------------------------
+   Four documents, thirty-one clauses, and not one <ul> between them. The
+   privacy policy's own sentence — "the Act requires a specific purpose for
+   each item rather than a general permission, so here they are, one line
+   each" — was followed by nine of them run together in a single paragraph.
+   An enumeration set as a list is the difference between a document you can
+   check yourself against and one you have to read twice. The marker is the
+   same 1px indigo rule the eyebrow uses, so a clause list reads as part of
+   this site rather than as a browser default. */
+.policy__list { margin-top: 1.15em; max-width: var(--m-wide); }
+.policy__list > li {
+  position: relative;
+  padding: 0.55rem 0 0.55rem 1.9rem;
+  line-height: 1.62;
+}
+.policy__list > li + li { border-top: 1px solid var(--line-soft); }
+.policy__list > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1.45em;
+  width: 1.1rem;
+  height: 1px;
+  background: var(--indigo);
+  opacity: 0.5;
+}
+.policy__list > li b { color: var(--ink); font-weight: 500; }
+.policy__list + p, .policy__list + .policy__upd { margin-top: 1.15em; }
+
+
+/* ==========================================================================
+   HOMEPAGE
+   Scoped to index.html by id or by a page-local class. Appended, so it wins
+   over the base rules it restates rather than editing them in place.
+   ========================================================================== */
+
+/* --- 1 — The hero arrives at the fold ------------------------------------
+   It was a fixed 66vh box: 708px tall inside a 900px screen, so the strongest
+   thing on the site stopped a section-and-a-half short of the bottom, and the
+   copy column ran out 193px above the photograph beside it.
+
+   Two changes. The height becomes a minimum rather than a fixed value, so the
+   section fills the screen and can still grow when the type needs it. And the
+   copy column stretches the full frame with its content pinned to both ends —
+   headline at the top, three ranked claims at the foot — so it finishes level
+   with the picture instead of dying halfway down it. */
+.lede-hero__grid {
+  height: auto;
+  min-height: clamp(560px, calc(100svh - var(--rail)), 880px);
+  align-items: stretch;
+}
+.lede-hero__copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--s-5);
+  padding-block: clamp(1.75rem, 4.5vh, 3.25rem);
+}
+.lede-hero__say { flex: 0 0 auto; }
+
+/* The frame no longer takes its width from its height. At a fold-height 66vh
+   its own 1122:1330 ratio would make it 666px wide at 1440, which leaves the
+   headline 80px short of its own longest line. The column is capped instead
+   and the frame goes tall — which is why the photograph was changed to the
+   one composition in the set that is built vertically. */
+.lede-hero__fig {
+  position: relative;
+  aspect-ratio: auto;
+  width: clamp(300px, 34vw, 500px);
+  height: auto;
+  align-self: stretch;
+}
+.lede-hero__fig img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 34%;
+}
+
+/* The trust strip that used to sit under the hero was five unranked claims in
+   11px mono with no evidence and no link, identical on three pages. The three
+   that carry weight move into the hero, ranked, each pointing at the page that
+   substantiates it. The other two are already in the announcement bar. */
+.hled {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--line);
+  max-width: 44rem;
+}
+.hled li {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: var(--s-2);
+  row-gap: 0.35rem;
+  padding-block: 0.8rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+.hled__n {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-mono);
+  color: var(--indigo);
+}
+.hled__claim {
+  font-size: var(--t-small);
+  line-height: 1.7;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+.hled__ev {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-mono);
+  text-transform: uppercase;
+  color: var(--indigo);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--indigo-ring);
+  padding-bottom: 0.2rem;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.hled__ev:hover { border-bottom-color: var(--indigo); }
+
+@media (max-width: 1000px) {
+  .lede-hero__grid { min-height: 0; align-items: start; }
+  .lede-hero__copy { display: block; padding-block: var(--s-5) var(--s-4); }
+  .lede-hero__fig {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    align-self: auto;
+  }
+  .lede-hero__fig img { position: static; object-position: 50% 50%; }
+  .hled { margin-top: var(--s-4); }
+}
+@media (max-width: 560px) {
+  .hled li { grid-template-columns: 2.4rem minmax(0, 1fr); }
+  .hled__ev { grid-column: 2; justify-self: start; }
+}
+
+/* --- 2 — The five read as five -------------------------------------------
+   Every packshot is lit on solid white and fills its 4:5 frame edge to edge,
+   so the tint behind it was never once visible: five white bottles on five
+   white grounds. The tint is laid back over the photograph instead, which
+   hues the whole frame without touching the contrast inside it. Scoped to the
+   homepage grid — the same component elsewhere is not mine to change. */
+#range .pcard__fig { isolation: isolate; }
+#range .pcard__fig::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: inherit;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+/* The serum sat on the sand ground and the sunscreen on the gold one, which
+   are four units apart and read as the same colour. The serum takes the green
+   its own carton is printed in. */
+.tint-sage { background: #E3EDE4; }
+
+/* At two columns the fifth card turned into a different component — figure
+   left, copy right — so the row would close. One card in five behaving
+   differently costs more than a trailing empty cell. */
+@media (max-width: 700px) {
+  #range .prods__grid > .pcard:last-child:nth-child(odd) { grid-column: auto; }
+  #range .prods__grid > .pcard:last-child:nth-child(odd) .pcard__link { display: flex; }
+  #range .prods__grid > .pcard:last-child:nth-child(odd) .pcard__body { padding-top: 1.3rem; }
+}
+
+/* --- 4 — The descent, standing still --------------------------------------
+   It took 16% of the page for 52 words, and the schematic only made its
+   argument if you happened to scroll through it at the right speed: standing
+   still it was one vesicle near the top of an empty cross-section. The figure
+   now carries the whole descent as a static trace — the vesicle drawn faintly
+   at the two stops it has yet to reach, and the actives already scattered
+   where it ends — and the section drops to the standard rhythm. */
+.strata__trace { pointer-events: none; }
+.dstep__more { margin-top: var(--s-3); }
+.descent--brief .strata svg { max-width: 520px; margin-inline: auto; }
+.descent--brief .strata { display: flex; flex-direction: column; justify-content: center; }
+
+/* --- 5 — The founder's portrait crosses the seam on purpose ---------------
+   The overhang was deliberate and read as a clipping bug: 86px of a 632px
+   picture, with nothing on the far side of the line to say it was meant. It
+   now crosses by a fifth of its own height and carries its caption over with
+   it, set on the dark ground it lands on. */
+.founder__fig {
+  aspect-ratio: auto;
+  overflow: visible;
+  background: none;
+  border-radius: 0;
+  position: relative;
+}
+.founder__plate {
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--mist);
+}
+.founder__plate img { width: 100%; height: 100%; object-fit: cover; }
+.founder__cap {
+  margin-top: 0.9rem;
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-mono);
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* The section repeated its own pull quote word for word in the paragraph
+   below it, and set it in quotation marks beside a photograph of a named
+   person who has never been quoted here. The statement is the brand's, so it
+   loses the quote marks; the people are named in a list instead. */
+.founder__lead {
+  margin-top: var(--s-3);
+  font-family: var(--serif);
+  font-size: clamp(1.2rem, 1.9vw, 1.65rem);
+  line-height: 1.45;
+  font-weight: 300;
+  max-width: var(--m-tight);
+}
+.founder__who {
+  margin-top: var(--s-4);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line-soft);
+  display: grid;
+  gap: var(--s-3);
+  max-width: var(--m-read);
+}
+.founder__who dt {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-mono);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.founder__who dd {
+  margin: 0.4rem 0 0;
+  font-size: var(--t-small);
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+@media (min-width: 1001px) {
+  .founder__fig {
+    margin-bottom: calc(-1 * clamp(3rem, 9vw, 8rem));
+    box-shadow: none;
+  }
+  .founder__plate { box-shadow: 0 18px 48px rgba(10, 11, 30, 0.22); }
+  /* The caption sits below the picture, which puts it on the reel band. Its
+     own background is set to that band's colour so the contrast it is read
+     against is the contrast it is actually rendered against. */
+  .founder__cap {
+    position: absolute;
+    top: calc(100% + 1.15rem);
+    left: 0;
+    margin-top: 0;
+    padding: 0.15rem 0 0;
+    background: var(--ink);
+    color: var(--on-dark-2);
+  }
+  .reels { padding-top: calc(var(--s-section) + clamp(3rem, 9vw, 8rem)); }
+}
+
+/* --- 6 — Notes from use ---------------------------------------------------
+   The lead note was set at 40px beside siblings at 17.6px — not a hierarchy,
+   a shout — and because it spanned two columns and two rows it finished 108px
+   above the pair stacked beside it. Three notes, three columns, one step of
+   emphasis on the first. */
+#reviews .revs__grid,
+#reviews .revs__grid:has(.rev--feature) {
+  grid-template-columns: repeat(3, 1fr);
+  row-gap: var(--s-5);
+}
+#reviews .rev {
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+}
+#reviews .rev--feature { grid-column: auto; grid-row: auto; }
+#reviews .rev blockquote { max-width: none; }
+#reviews .rev--feature blockquote {
+  font-size: var(--t-h3);
+  line-height: 1.58;
+  margin-top: 0.9rem;
+}
+@media (max-width: 1000px) {
+  #reviews .revs__grid,
+  #reviews .revs__grid:has(.rev--feature) { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 620px) {
+  #reviews .revs__grid,
+  #reviews .revs__grid:has(.rev--feature) {
+    grid-template-columns: 1fr;
+    row-gap: var(--s-4);
+  }
+}
+
+/* ========================================================================
+   THE RANGE AND THE ROUTINES
+   shop · protocol · pigment-routine · barrier-routine
+   ======================================================================== */
+
+/* 1 — A heading rank above the section heads.
+   Every h1 on the site was set to --t-h2, so a page title rendered at
+   exactly the size of the h2s beneath it and no page had a hierarchy.
+   This sits between --t-h2 (40px) and the hero display (73.6px). */
+.h1 { font-size: clamp(2.1rem, 4vw, 3.5rem); line-height: 1.04; }
+
+/* 2 — Shop by concern is navigation, not a claim.
+   It was borrowing .trust, so one page ran the same component for two
+   different jobs — filters at the top, claims at the bottom. */
+.filters { border-block: 1px solid var(--line-soft); background: var(--white); }
+.filters__in {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: 0.8rem var(--s-3); padding-block: 1.2rem;
+}
+.filters__lbl {
+  font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.filters__in .tlink { font-size: var(--t-label); letter-spacing: var(--tr-mono); }
+
+/* 3 — The key to the numbered badge, at the head of the grid it explains.
+   The grid used to open on ~90px of empty ground. */
+.rangekey {
+  display: flex; align-items: center; gap: 0.85rem;
+  font-family: var(--mono); font-size: var(--t-small);
+  letter-spacing: var(--tr-mono-sm);
+  color: var(--ink-mute);
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--line-soft);
+}
+.rangekey__n {
+  flex: none;
+  width: 1.7rem; height: 1.7rem;
+  display: grid; place-items: center;
+  font-size: var(--t-label-sm); letter-spacing: var(--tr-mono);
+  color: var(--ink);
+  border: 1px solid rgba(22,23,58,0.22); border-radius: 50%;
+  background: var(--white);
+}
+.rangekey + .prods__grid { margin-top: var(--s-4); }
+
+/* 4 — A routine card says which of the five steps it contains.
+   It used to carry a bare "3" or "5" in the identical circular badge that
+   means "step 02" on the product cards directly above it: one component,
+   a count in one row and an index in the other. */
+.pcard__set {
+  position: absolute; z-index: 2;
+  top: 0.85rem; left: 0.85rem;
+  display: inline-flex; align-items: center;
+  padding: 0.34rem 0.62rem;
+  font-family: var(--mono); font-size: var(--t-label-sm);
+  letter-spacing: var(--tr-mono); text-transform: uppercase;
+  color: var(--ink);
+  border: 1px solid rgba(22,23,58,0.22); border-radius: 999px;
+  background: var(--on-dark-2);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+
+/* 5 — A routine card pictures the products it actually sells.
+   Every routine card used to show one lifestyle photograph carrying one or
+   two of the three to five things in the box. These are the same packshots
+   the product cards use, at the same 4:5, so one grid holds one world. */
+.setfig { display: grid; place-content: center; padding: 8% 7%; }
+.setfig__grid {
+  display: flex; flex-wrap: wrap;
+  justify-content: center; align-items: flex-end;
+  gap: 4%; width: 100%;
+  transition: transform 800ms var(--ease-out);
+}
+.setfig .setfig__grid img {
+  flex: 0 0 29%; width: 29%; height: auto;
+  aspect-ratio: 4 / 5; object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(22,23,58,0.07);
+}
+.pcard__link:hover .setfig .setfig__grid img { transform: none; }
+.pcard__link:hover .setfig__grid { transform: scale(1.035); }
+
+/* 6 — The three routines, compared once.
+   The Protocol page used to spend a 414px heading-and-one-paragraph
+   section and then two identical 303px slabs saying less than this says.
+   Subgrid keeps every row on one line across all three columns. */
+.cmp {
+  margin-top: var(--s-5);
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto auto auto auto auto;
+  column-gap: var(--gap);
+}
+.cmp__col {
+  grid-row: 1 / -1;
+  display: grid; grid-template-rows: subgrid;
+  row-gap: var(--s-2);
+  padding-inline: var(--s-3);
+  border-left: 1px solid var(--line-soft);
+}
+.cmp__col:first-child { padding-left: 0; border-left: 0; }
+.cmp__fig { display: block; border-radius: 2px; }
+.cmp__name { margin: 0; }
+.cmp__name a { color: inherit; }
+.cmp__name a:hover { color: var(--indigo); }
+.cmp__for { font-size: var(--t-s); color: var(--ink-soft); margin: 0; }
+.cmp__facts { margin: 0; border-top: 1px solid var(--line-soft); }
+.cmp__facts > div {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: var(--s-2);
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.cmp__facts dt {
+  font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.cmp__facts dd {
+  margin: 0; font-family: var(--mono); font-size: var(--t-small);
+  letter-spacing: var(--tr-mono-sm); color: var(--ink-soft);
+  text-align: right; white-space: nowrap;
+}
+.cmp__facts .cmp__now dd, .cmp__facts .cmp__now dt { color: var(--ink); }
+.cmp__facts .cmp__now dd { font-size: var(--t-num); letter-spacing: var(--tr-tight); }
+.cmp__facts .cmp__was dd { text-decoration: line-through; }
+.cmp__act { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; align-self: start; }
+.cmp__here {
+  font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); text-transform: uppercase;
+  color: var(--indigo);
+}
+@media (max-width: 900px) {
+  .cmp { grid-template-columns: 1fr; grid-template-rows: none; row-gap: var(--s-4); }
+  .cmp__col {
+    grid-row: auto; grid-template-rows: none; display: block;
+    padding-inline: 0; padding-top: var(--s-3);
+    border-left: 0; border-top: 1px solid var(--line-soft);
+  }
+  .cmp__col:first-child { padding-top: 0; border-top: 0; }
+  .cmp__col > * + * { margin-top: var(--s-2); }
+  .cmp__fig { max-width: 320px; }
+}
+
+/* 7 — A portrait photograph in a letterbox slot.
+   .band is 2.2:1; the art here is 2:3, so the standard band threw away 70%
+   of the frame. This keeps the picture's own shape and puts the words
+   beside it instead of on top of it. */
+.band--split {
+  height: auto;
+  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  align-items: stretch;
+}
+.band--split::after { display: none; }
+.band--split .band__fig { position: relative; overflow: hidden; aspect-ratio: 0.72; }
+.band--split .band__fig img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; }
+.band--split .band__copy {
+  align-self: center;
+  padding: var(--s-4) var(--gutter) var(--s-4) clamp(1.5rem, 3vw, 3rem);
+  max-width: 46ch; margin-inline: 0;
+}
+.band--split .band__sub { margin-top: 1.1rem; color: var(--on-dark); font-size: var(--t-m); }
+@media (max-width: 820px) {
+  .band--split { grid-template-columns: 1fr; }
+  .band--split .band__fig { aspect-ratio: 4 / 3; }
+  .band--split .band__copy { padding: var(--s-3) var(--gutter) var(--s-4); max-width: none; }
+}
+
+/* 8 — The contents list was showing its packshots at 88px, below the size
+   at which a white bottle on a white ground is identifiable. */
+.proto__rows--lg .proto__row { grid-template-columns: clamp(4.5rem, 9vw, 8rem) 1fr auto; }
+
+/* 9 — <cite> means a source. Where the line beside a claim is a label
+   rather than an attribution, it must not be a <cite>. */
+.pdp__claim .claim__by {
+  text-align: right;
+  font-family: var(--mono); font-size: var(--t-label); letter-spacing: var(--tr-mono);
+  text-transform: uppercase; color: var(--ink-mute); line-height: 1.6;
+  margin: 0;
+}
+@media (max-width: 860px) { .pdp__claim .claim__by { text-align: left; } }
+
+/* ==========================================================================
+   Product pages — five arguments, not one template
+   --------------------------------------------------------------------------
+   Every PDP used to run the same four sections through its middle: eyebrow,
+   40px heading, full-bleed hairline, left-aligned list — `facets`, `inci`,
+   Directions, "What to expect" — three thousand pixels of one texture, and
+   the formula stated twice in two kinds of furniture. The modules below
+   replace the generic claim grid with the one argument each product actually
+   makes, and change the ground, the measure and the count as they go.
+   ========================================================================== */
+
+/* --- The course, as a timeline rather than a fifth stacked list ----------
+   "Over a course" was a second `.steps` list directly under the first one.
+   Twelve weeks is a horizontal fact; set it horizontally. */
+.coursewrap { margin-top: var(--s-5); padding-top: var(--s-3); border-top: 1px solid var(--line); }
+.course {
+  margin-top: var(--s-3);
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap);
+}
+.course li { position: relative; padding-top: var(--s-3); }
+.course li::before {
+  content: ""; position: absolute; top: 0; left: 0;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--indigo);
+}
+.course li::after {
+  content: ""; position: absolute; top: 3px; left: 11px; right: calc(-1 * var(--gap));
+  border-top: 1px solid var(--line);
+}
+.course li:last-child::after { right: 0; }
+.course .n {
+  display: block; font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); text-transform: uppercase; color: var(--indigo);
+}
+.course p {
+  margin-top: 0.7rem; font-size: var(--t-s); color: var(--ink-soft);
+  line-height: 1.6; max-width: var(--m-stat);
+}
+@media (max-width: 780px) { .course { grid-template-columns: repeat(2, 1fr); row-gap: var(--s-4); } }
+@media (max-width: 470px) { .course { grid-template-columns: 1fr; } .course li::after { display: none; } }
+
+/* --- A band that shows its whole frame -----------------------------------
+   The full-bleed band forces a 4:5 source into a 2.2 slot and shows about a
+   third of it — on the serum page, a pump collar and half a label. Split it:
+   the picture keeps its own proportion and nothing is cropped away. The copy
+   column stretches to the picture, so neither column ends short. */
+.band--split {
+  height: auto; max-height: none;
+  grid-template-columns: minmax(0, 1fr) minmax(0, min(46%, 560px));
+  align-items: stretch;
+}
+.band--split::after { display: none; }
+.band--split img {
+  position: static; align-self: start;
+  width: 100%; height: auto;
+  aspect-ratio: var(--band-ar, 4 / 5);
+  object-fit: cover; object-position: 50% 50%;
+}
+.band--split .band__copy {
+  max-width: none; margin-inline: 0;
+  padding: clamp(2.5rem, 5vw, 4.5rem) var(--gutter);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.band--split .band__h2 { max-width: var(--m-lede); }
+.band--split .band__note {
+  margin-top: var(--s-3); font-size: var(--t-s); line-height: 1.7;
+  color: var(--on-dark-2); max-width: var(--m-read);
+}
+.band--wide { --band-ar: 4 / 3; }
+@media (max-width: 820px) {
+  .band--split { grid-template-columns: 1fr; }
+  .band--split img { aspect-ratio: 5 / 4; }
+  .band--split .band__copy { padding-block: var(--s-4); }
+}
+
+/* --- Cleanser: the contrast its own copy draws ---------------------------
+   Hydrasyn's argument is not a list of four badges, it is a comparison: what
+   a surfactant wash costs, against what this one does instead. Two grounds,
+   two measures, one rule down the middle. */
+.versus {
+  margin-top: var(--s-4);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--line-soft); border: 1px solid var(--line-soft);
+}
+.versus > div { padding: var(--s-4) var(--s-3); }
+.versus__a { background: var(--sand-pale); }
+.versus__b { background: var(--paper); }
+.versus h3 {
+  font-family: var(--mono); font-size: var(--t-label); font-weight: 500;
+  letter-spacing: var(--tr-mono); text-transform: uppercase; color: var(--ink-mute);
+}
+.versus__b h3 { color: var(--indigo); }
+.versus__lede {
+  margin-top: var(--s-2); font-family: var(--serif); font-weight: 300;
+  font-size: clamp(1.15rem, 1.7vw, 1.45rem); line-height: 1.4;
+  max-width: var(--m-lede); text-wrap: pretty;
+}
+.versus ul { margin-top: var(--s-3); border-top: 1px solid var(--line-soft); }
+.versus li {
+  padding-block: 0.75rem; border-bottom: 1px solid var(--line-soft);
+  font-size: var(--t-s); color: var(--ink-soft); line-height: 1.55;
+}
+.versus li:last-child { border-bottom: 0; padding-bottom: 0; }
+.versus li b {
+  display: block; font-family: var(--display); font-weight: 500;
+  letter-spacing: var(--tr-tight); color: var(--ink);
+}
+@media (max-width: 760px) { .versus { grid-template-columns: 1fr; } }
+
+/* --- Serum: where pigment actually forms ---------------------------------
+   The reason this formula names ten actives instead of one. Four stages,
+   read left to right, with the count of actives that acts at each. */
+.pathmap {
+  margin-top: var(--s-4); padding-top: var(--s-3); border-top: 1px solid var(--ink);
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap);
+}
+.pathmap__n {
+  font-family: var(--mono); font-size: var(--t-label-sm);
+  letter-spacing: var(--tr-mono); color: var(--ink-mute);
+}
+.pathmap h3 {
+  margin-top: 0.45rem; font-family: var(--display); font-weight: 300;
+  font-size: var(--t-h3); letter-spacing: var(--tr-tight); line-height: 1.2;
+}
+.pathmap p { margin-top: 0.7rem; font-size: var(--t-s); color: var(--ink-soft); line-height: 1.6; }
+.pathmap__c {
+  margin-top: 0.9rem; padding-top: 0.6rem; border-top: 1px solid var(--line-soft);
+  font-family: var(--mono); font-size: var(--t-label); letter-spacing: var(--tr-mono-sm);
+  text-transform: uppercase; color: var(--indigo);
+}
+.pathmap__close {
+  margin-top: var(--s-4); font-family: var(--serif); font-weight: 300;
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem); line-height: 1.45;
+  max-width: var(--m-lede); text-wrap: pretty;
+}
+@media (max-width: 880px) { .pathmap { grid-template-columns: repeat(2, 1fr); row-gap: var(--s-4); } }
+@media (max-width: 480px) { .pathmap { grid-template-columns: 1fr; } }
+
+/* --- Moisturiser: repair, and the figure we chose not to print -----------
+   The brand's listing says 72 hours and its bottle says 24. That gap is the
+   most interesting thing on the page, so it gets the page's argument slot. */
+.reckon {
+  margin-top: var(--s-4);
+  display: grid; grid-template-columns: minmax(0, var(--sp6)) minmax(0, var(--sp5));
+  column-gap: var(--gap); row-gap: var(--s-4);
+}
+.reckon__lede {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(1.25rem, 2vw, 1.75rem); line-height: 1.4;
+  max-width: var(--m-lede); text-wrap: pretty;
+}
+.reckon__note { margin-top: var(--s-3); font-size: var(--t-m); color: var(--ink-soft); line-height: 1.7; max-width: var(--m-read); }
+.reckon__fig { background: var(--sand-pale); padding: var(--s-3) var(--s-4); }
+.reckon__row {
+  display: flex; align-items: baseline; gap: var(--s-3);
+  padding-block: var(--s-3); border-bottom: 1px solid var(--line);
+}
+.reckon__row:last-of-type { border-bottom: 0; }
+.reckon__n {
+  flex: 0 0 auto; min-width: 3.4rem;
+  font-family: var(--display); font-weight: 200; font-size: var(--t-h2);
+  letter-spacing: var(--tr-display); line-height: 1;
+  font-variant-numeric: tabular-nums; color: var(--ink-mute);
+}
+.reckon__row--used .reckon__n { color: var(--indigo); }
+.reckon__row p { font-size: var(--t-s); color: var(--ink-soft); line-height: 1.55; }
+.reckon__rule {
+  margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--line);
+  font-family: var(--mono); font-size: var(--t-label); letter-spacing: var(--tr-mono-sm);
+  line-height: 1.75; color: var(--ink-soft);
+}
+@media (max-width: 880px) { .reckon { grid-template-columns: 1fr; } }
+
+/* --- Sunscreen: the filter system, which is the product ------------------
+   Three named filters were buried as one group inside a nine-row ingredient
+   table. They are the reason to buy the thing; they get the dark ground and
+   the biggest type on the page, and the table below no longer repeats them. */
+.filterset { background: var(--ink); color: var(--on-dark); }
+.filterset .eyebrow { color: var(--sand); }
+.filterset .h2 { color: var(--paper); }
+.filterset__grid {
+  margin-top: var(--s-5);
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap);
+}
+.filterset__cell { padding-top: var(--s-3); border-top: 1px solid var(--on-dark-rule); }
+.filterset__name {
+  font-family: var(--display); font-weight: 200;
+  font-size: clamp(1.45rem, 2.5vw, 2.1rem); letter-spacing: var(--tr-display);
+  line-height: 1.08; color: var(--paper);
+}
+.filterset__role {
+  margin-top: 0.9rem; font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); text-transform: uppercase; color: var(--sand);
+}
+.filterset__cell p { margin-top: 0.8rem; font-size: var(--t-m); color: var(--on-dark-2); line-height: 1.65; max-width: 32ch; }
+.filterset__foot {
+  margin-top: var(--s-5); padding-top: var(--s-3); border-top: 1px solid var(--on-dark-rule);
+  font-size: var(--t-m); color: var(--on-dark-2); line-height: 1.7; max-width: var(--m-read);
+}
+@media (max-width: 820px) { .filterset__grid { grid-template-columns: 1fr; row-gap: var(--s-4); } }
+
+/* --- Night cream: the case for doing it at night -------------------------
+   Repair while you sleep is the whole positioning, so the page's dark ground
+   goes here rather than under a photograph of a carton. */
+.nightlist { background: var(--ink); color: var(--on-dark); }
+.nightlist .eyebrow { color: var(--sand); }
+.nightlist .h2 { color: var(--paper); }
+.nightlist__rows { margin-top: var(--s-5); border-top: 1px solid var(--on-dark-rule); }
+.nightlist__row {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, var(--sp3)) minmax(0, var(--sp6));
+  gap: var(--gap); align-items: baseline;
+  padding-block: var(--s-3); border-bottom: 1px solid var(--on-dark-rule);
+}
+.nightlist__n { font-family: var(--mono); font-size: var(--t-label); letter-spacing: var(--tr-mono); color: var(--sand); }
+.nightlist__h {
+  font-family: var(--display); font-weight: 200;
+  font-size: clamp(1.3rem, 2.2vw, 1.9rem); letter-spacing: var(--tr-display);
+  line-height: 1.12; color: var(--paper);
+}
+.nightlist__row p { font-size: var(--t-m); color: var(--on-dark-2); line-height: 1.65; }
+.nightlist__foot {
+  margin-top: var(--s-4); font-size: var(--t-m); color: var(--on-dark-2);
+  line-height: 1.7; max-width: var(--m-read);
+}
+@media (max-width: 880px) {
+  .nightlist__row { grid-template-columns: 3rem minmax(0, 1fr); row-gap: 0.6rem; }
+  .nightlist__row p { grid-column: 2; }
+}
+
+/* --- The source artwork, moved onto the evidence ground ------------------
+   An 85px closed drawer inside a 216px section of its own, three screens
+   below the claims it sources. It belongs against the method note, on the
+   one dark ground the page already uses to say where its numbers came from.
+   It stays a drawer: nothing inside it is fetched until it is opened. */
+.spec .artcase { margin-top: var(--s-4); border-block-color: var(--on-dark-rule); }
+.spec .artcase > summary { color: var(--paper); }
+.spec .artcase .eyebrow { color: var(--sand); }
+.spec .artcase__n { color: var(--on-dark-2); }
+.spec .artcase__note { color: var(--on-dark-2); }
+.spec .artcase__rail img { border-color: var(--on-dark-line); background: var(--indigo-lift); }
+.spec .artcase__rail figcaption { color: var(--on-dark-2); }
+.spec .artcase > summary:focus-visible { outline-color: var(--sand); }
+
+/* --- Four thumbnails, four columns — not three and an orphan ------------- */
+.gal__thumbs--4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 430px) { .gal__thumbs--4 { grid-template-columns: repeat(2, 1fr); } }
+
+/* --- The reel card, with both columns doing work -------------------------
+   373px of poster beside 184px of copy, both centred, left half the right
+   column empty and 84px dead above and below the poster. The copy now says
+   what the clip shows and the two columns share a datum. */
+.reelcard { align-items: stretch; }
+@media (min-width: 701px) { .reelcard { align-items: stretch; } }
+.reelcard__copy { display: flex; flex-direction: column; justify-content: center; }
+.reelcard__meta {
+  margin-top: var(--s-3); padding-top: var(--s-2); border-top: 1px solid var(--line-soft);
+  font-family: var(--mono); font-size: var(--t-label); letter-spacing: var(--tr-mono-sm);
+  line-height: 1.75; color: var(--ink-mute); max-width: var(--m-read);
+}
+
+/* --- The promotion field belongs beside the button it discounts -----------
+   In the bag the code field sits in the aside, directly above the button
+   that takes the money. At checkout it sat inside the summary panel, which
+   on a phone is the block standing between the buyer and the first field
+   they have to fill in — 130px of a discount they may not have. It has
+   moved to the aside, which is where it already was one page earlier, and
+   the summary panel is now only the receipt it claims to be. */
+.promo--flush { margin-top: var(--s-3); padding-top: var(--s-3); }
+@media (min-width: 1001px) {
+  /* With the code field out of the left track, the totals no longer have a
+     third row to span into. */
+  #coSide > .cart__sum { grid-row: 2; }
+}
+
+/* ==========================================================================
+   EDITORIAL PAGES — science, about, faq, contact
+   ========================================================================== */
+
+/* --- Standfirst ----------------------------------------------------------
+   The sentence under a page or section title was set at reading size, so the
+   opening of every editorial page ranked below its own body copy. One step
+   up, on the size the site already sets its ledes at. */
+.standfirst { font-size: var(--t-l); line-height: 1.55; }
+
+/* --- The Science: opening ------------------------------------------------
+   The page the whole range rests on opened with a 205px caption strip. It now
+   opens with a title, a thesis, and an index of the argument — four parts,
+   on the twelve-column grid the rest of the site uses. */
+.sciop { padding-bottom: var(--s-5); }
+.sciop .shead { max-width: var(--m-wide); }
+.sciop__toc { margin-top: var(--s-5); }
+.sciop__toc ol {
+  display: grid;
+  grid-template-columns: repeat(4, var(--sp3));
+  column-gap: var(--gap);
+  row-gap: var(--s-3);
+}
+.sciop__toc a {
+  display: block;
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.sciop__n {
+  display: block;
+  font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); color: var(--indigo);
+}
+.sciop__toc b {
+  display: block; margin-top: 0.7rem;
+  font-family: var(--display); font-size: var(--t-h3); font-weight: 300;
+  text-transform: uppercase; letter-spacing: var(--tr-mono-sm);
+  line-height: 1.2; color: var(--ink);
+  transition: color var(--dur-fast) var(--ease);
+}
+.sciop__d {
+  display: block; margin-top: 0.55rem;
+  font-size: var(--t-s); color: var(--ink-soft); line-height: 1.55;
+}
+.sciop__toc a:hover { border-top-color: var(--indigo); }
+.sciop__toc a:hover b { color: var(--indigo); }
+@media (max-width: 900px) { .sciop__toc ol { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .sciop__toc ol { grid-template-columns: 1fr; } }
+
+/* --- The Science: the comparison, promoted -------------------------------
+   The best content design on the site was buried at the foot of the descent
+   section, below a schematic and three cards. It gets its own ground. */
+.verdict { background: var(--ink); color: var(--paper); }
+.verdict .eyebrow { color: var(--sand); }
+.verdict .shead p { color: var(--on-dark-2); }
+
+/* --- The Science: prose measure ------------------------------------------
+   The copy column was capped at 63ch inside a 718px slot, so the section had
+   two right edges. The column carries the measure instead. */
+.sci__grid .body-copy { max-width: var(--m-wide); }
+
+/* --- Grouped actives: a note per group -----------------------------------
+   Four hundred words of prose restated this list one section above it. The
+   sentences worth keeping now sit beside the group they belong to. */
+.inci__note {
+  display: block;
+  margin-top: var(--s-3); padding-top: var(--s-2);
+  max-width: var(--m-read);
+}
+.inci li:first-child .inci__note { margin-top: 0; }
+#carries .inci span { max-width: var(--m-wide); }
+
+/* Two of the five grounds could not do the job they were given. tint-mist is
+   the exact colour of the .prods section behind it, so card 01 had no frame at
+   all; tint-sand and tint-gold are four units apart and read as one colour.
+   Five grounds, spread far enough apart to be told apart at a glance. */
+.tint-aqua { background: #DDEBEA; }
+.tint-peri { background: #E0E3F4; }
+
+/* The only text link on a dark ground on this page. --indigo on --ink is
+   3E388A on 16173A, which is a link nobody can see. */
+.descent .dstep__more .tlink { color: var(--sand); }
+
+/* --- Editorial two-column: a head that travels beside its reference block --
+   A twelve-column list set against a 62ch measure leaves a third of the row
+   empty. The head takes the first three columns and stays with the reader;
+   the block takes the remaining nine and fills them. */
+.ed__grid {
+  display: grid;
+  grid-template-columns: var(--sp3) var(--sp9);
+  column-gap: var(--gap);
+  row-gap: clamp(2rem, 6vw, 5rem);
+  align-items: start;
+}
+.ed__grid > .inci { margin-top: 0; }
+@media (max-width: 900px) { .ed__grid { grid-template-columns: 1fr; row-gap: var(--s-4); } }
+@media (min-width: 1001px) {
+  .ed__grid > .shead { position: sticky; top: calc(var(--rail) + 1.5rem); }
+}
+
+/* The group note is the lede for the rows beneath it, so it carries the
+   reading colour rather than the secondary one. */
+.inci__note { color: var(--ink); max-width: var(--m-wide); }
+
+/* Four index entries whose titles wrap to different depths put their
+   descriptions on four different baselines. Two lines is the reservation. */
+.sciop__toc b { min-height: 2.4em; }
+
+/* The split band sits on the page grid rather than bleeding to the viewport
+   edge: at 2560 a 46%-wide picture column is a 1,400px-tall band. Capping it
+   at the shell also lines the copy up with every other section on the page. */
+.band--split {
+  max-width: var(--maxw); margin-inline: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 40%);
+}
+
+/* --------------------------------------------------------------------------
+   NAME COLLISION, RESOLVED.
+   Another module in this stylesheet already owns `.band--split` (a portrait
+   .band__fig beside a copy column). The product-page variant below was
+   briefly written against the same name; it is renamed `.band--frame` here
+   and the earlier `.band--split` declarations are restated verbatim so the
+   original component keeps the values it was written with.
+   -------------------------------------------------------------------------- */
+.band--split {
+  height: auto; max-width: none; margin-inline: 0;
+  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  align-items: stretch;
+}
+.band--split .band__copy {
+  align-self: center;
+  padding: var(--s-4) var(--gutter) var(--s-4) clamp(1.5rem, 3vw, 3rem);
+  max-width: 46ch; margin-inline: 0;
+  display: block;
+}
+@media (max-width: 820px) {
+  .band--split { grid-template-columns: 1fr; }
+  .band--split .band__copy { padding: var(--s-3) var(--gutter) var(--s-4); max-width: none; }
+}
+
+/* --- A band that shows its whole frame (product pages) -------------------
+   The full-bleed band forces a 4:5 source into a 2.2 slot and shows about a
+   third of it — on the serum page, a pump collar and half a label. This one
+   keeps the picture's own proportion, so nothing is cropped away, and sits
+   on the page grid rather than bleeding to the edge: at 2560 a percentage
+   picture column becomes a 1,400px-tall band. The copy column stretches to
+   the picture, so neither column ends short of the other. */
+.band--frame {
+  height: auto;
+  max-width: var(--maxw); margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 40%);
+  align-items: stretch;
+}
+.band--frame::after { display: none; }
+.band--frame img {
+  position: static; align-self: start;
+  width: 100%; height: auto;
+  aspect-ratio: var(--band-ar, 4 / 5);
+  object-fit: cover; object-position: 50% 50%;
+}
+.band--frame .band__copy {
+  max-width: none; margin-inline: 0;
+  padding: clamp(2.5rem, 5vw, 4.5rem) var(--gutter);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.band--frame .band__h2 { max-width: var(--m-lede); }
+.band--frame .band__note {
+  margin-top: var(--s-3); font-size: var(--t-s); line-height: 1.7;
+  color: var(--on-dark-2); max-width: var(--m-read);
+}
+@media (max-width: 820px) {
+  .band--frame { grid-template-columns: 1fr; }
+  .band--frame img { aspect-ratio: 5 / 4; }
+  .band--frame .band__copy { padding-block: var(--s-4); }
+}
+
+/* --- About: the side rail ------------------------------------------------
+   The origin section's side column carried one photograph and stopped. It now
+   carries the photograph and the four facts a reader of an origin page is
+   entitled to — who the company is, where it is, and how large the range. */
+.about__say { display: grid; row-gap: var(--s-3); }
+.about__meta { border-top: 1px solid var(--line); }
+.about__meta > div {
+  display: grid; grid-template-columns: 7rem 1fr; column-gap: var(--gap);
+  padding: 0.75rem 0; border-bottom: 1px solid var(--line-soft);
+}
+.about__meta dt {
+  font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); text-transform: uppercase; color: var(--ink-mute);
+}
+.about__meta dd { font-size: var(--t-s); color: var(--ink-soft); line-height: 1.5; }
+.about__grid .body-copy { max-width: var(--m-wide); }
+.about__grid .pull { max-width: var(--m-lede); }
+
+/* --- The founders, as a pair ---------------------------------------------
+   Two portraits taken against two different blank walls read as two snapshots
+   however they are arranged. One grade over both — the barrier diagram's own
+   indigo, carrying the photographs' luminance — makes them one commission. */
+.people__grid .person__fig { background: var(--indigo); }
+.people__grid .person__fig img {
+  filter: grayscale(1) contrast(1.05) brightness(1.03);
+  mix-blend-mode: luminosity;
+}
+
+/* --- One line grammar at every width -------------------------------------
+   On desktop the volume and the count were still stacking into two rows of
+   their own inside a 690px track, so the same object read two ways 620
+   pixels apart. Thumbnail, name, then the volume and the count on one line
+   beneath it, with the money on the right. */
+.co__lines .line { align-items: center; }
+.co__lines .line__body {
+  display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.45rem;
+}
+.co__lines .line__name { flex: 1 0 100%; }
+.co__lines .line__size, .co__lines .line__ctl { margin-top: 0.25rem; }
+.co__lines .line__qty::before { content: "\00b7\00a0"; color: var(--line); }
+/* The last line's own rule and the totals' rule sat 24px apart and read as
+   an empty row. One rule between the receipt and the money. */
+.co__lines .line:last-child { border-bottom: 0; }
+/* A total with a rule underneath it is a subtotal. */
+.cart__sum > div:last-child { border-bottom: 0; }
+
+/* Range & routines, continued — packshot sets.
+   A three-product set takes two to a row and a five-product set three, so
+   both fill the same frame instead of one floating in it. */
+.setfig__grid { row-gap: 0.7rem; }
+.setfig--3 .setfig__grid img { flex: 0 0 44%; width: 44%; }
+
+/* --- What the cross-sell is actually for ---------------------------------
+   The rail is headed "Complete the routine" and then offers the missing
+   bottles one at a time, at full price, with no mention of the routine —
+   which is the one place on the site where the routine argument is worth
+   real money. Naming both sets and both figures is the static half of that;
+   the specific "add the sunscreen and these three become the Pigmentation
+   Routine, ₹548 less" needs the bag's own contents and lives in main.js. */
+.xsell__note {
+  margin-top: 0.65rem;
+  margin-bottom: var(--s-3);
+  font-size: var(--t-s);
+  line-height: 1.62;
+  color: var(--ink-soft);
+  max-width: var(--m-read);
+}
+.xsell__note a {
+  color: var(--indigo);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: var(--indigo-a30);
+  transition: text-decoration-color var(--dur-fast) var(--ease-op);
+}
+.xsell__note a:hover { text-decoration-color: currentColor; }
+
+/* --- Page opener ---------------------------------------------------------
+   Crumb, title and thesis sit in a bare .shell with no padding of its own, so
+   on every page whose first section is a tinted band the standfirst ran into
+   the band's edge. */
+.pgtop { padding-bottom: var(--s-5); }
+
+/* The portrait pair spans the block it is given rather than stopping at a
+   fixed 56rem inside a 78rem section. */
+.ed__grid .people__grid { max-width: none; }
+
+/* --- Questions: three columns instead of two -----------------------------
+   The answers were set to a 62ch measure inside a nine-column slot, so about
+   380px sat dead to the right of every open answer. The head keeps its three
+   columns, the answers take six, and the three that were empty carry the
+   route out of the page — the policy that actually governs the answer, and
+   the person who will take the question the page does not cover. */
+@media (min-width: 901px) {
+  .faq__grid--aside { grid-template-columns: var(--sp3) var(--sp6) var(--sp3); }
+}
+.faq__aside { border-top: 1px solid var(--line); padding-top: var(--s-3); }
+.faq__aside-p {
+  margin-top: 0.9rem; font-size: var(--t-s); color: var(--ink-soft); line-height: 1.6;
+}
+.faq__links { margin-top: var(--s-3); border-top: 1px solid var(--line-soft); }
+.faq__links a {
+  display: block; padding: 0.85rem 0;
+  border-bottom: 1px solid var(--line-soft);
+  transition: color var(--dur-fast) var(--ease);
+}
+.faq__links b {
+  display: block; font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); text-transform: uppercase; color: var(--indigo);
+}
+.faq__links span {
+  display: block; margin-top: 0.35rem;
+  font-size: var(--t-s); color: var(--ink-soft); line-height: 1.5;
+}
+.faq__links a:hover b { text-decoration: underline; text-underline-offset: 3px; }
+@media (min-width: 1001px) {
+  .faq__grid--aside > .faq__aside { position: sticky; top: calc(var(--rail) + 1.5rem); }
+}
+
+/* --- Contact: one right edge ---------------------------------------------
+   The form was capped at 33rem inside a seven-column slot, so the section had
+   two right edges — the fields' and the column's. The column carries the
+   measure now, and the three short fields share a row rather than each
+   running the width of a message box. */
+.contact__grid .contact__form { max-width: none; }
+.contact__form h2 { margin-bottom: var(--s-3); }
+.contact__form .fld-row { margin-bottom: 0; }
+.contact__note {
+  margin-top: var(--s-3); padding-top: var(--s-3);
+  border-top: 1px solid var(--line-soft);
+  font-size: var(--t-s); color: var(--ink-soft); line-height: 1.6;
+  max-width: var(--m-read);
+}
+
+/* The words sit at the foot of the dark column, the way they sit at the foot
+   of the frame on a full-bleed band. Centred, the air above and below reads
+   as a column that ran out of copy; anchored, it reads as a margin. */
+.band--frame .band__copy { justify-content: flex-end; }
+@media (max-width: 820px) { .band--frame .band__copy { justify-content: flex-start; } }
+
+/* Card 01's ground and card 02's were the two closest of the five once they
+   became visible. The cleanser takes the cyan its own gel is, which puts real
+   distance between it and the serum's green. */
+.tint-aqua { background: #D8E8EC; }
+
+/* The live step in the descent set `background: var(--indigo-a08)`, and the
+   shorthand dropped the opaque --ink under it — so an 8% indigo tint was
+   composited over the container's own 24% white hairline fill and rendered as
+   a light grey slab. The tint goes back on top of the ink where it belongs.
+   The same rule does this on science.html, which is not mine to change. */
+.descent--brief .dstep.is-live {
+  background-color: var(--ink);
+  background-image: linear-gradient(var(--indigo-a08), var(--indigo-a08));
+}
+
+/* The disclosure is capped at 72ch, which on a 1248px shell is six short mono
+   lines in the left third and a hole beside them. It is a band across the top
+   of the notes it qualifies, so it runs the width of them. */
+#reviews .disclose { max-width: none; }
+
+/* Range & routines, continued — the split band's second column must fill the
+   row it sits in, not end 200px short of the picture beside it. */
+.band--split .band__copy {
+  align-self: stretch;
+  display: flex; flex-direction: column; justify-content: center;
+}
+
+/* Hero frame, corrected --------------------------------------------------
+   Pinning the frame's width and letting its height run to the fold is only
+   safe while the frame stays wider than the subject inside it. The carton and
+   bottle occupy the middle 56% of the photograph, so a frame narrower than
+   about 1:2 starts cutting the carton off — which is exactly what a 1024px
+   window on a 1200px-tall screen would have done. The fold height is capped
+   against the frame's own width, and the width floor is raised so the common
+   desktop sizes still land on the fold. One custom property feeds both, so
+   the cap and the frame cannot drift apart. */
+.lede-hero__grid {
+  --hero-fig-w: clamp(330px, 36vw, 500px);
+  min-height: min(
+    clamp(560px, calc(100svh - var(--rail)), 880px),
+    calc(var(--hero-fig-w) * 1.95)
+  );
+}
+.lede-hero__fig { width: var(--hero-fig-w); }
+
+@media (max-width: 1000px) {
+  .lede-hero__grid { min-height: 0; }
+  .lede-hero__fig { width: 100%; }
+}
+
+/* Typed text is prose, and prose on this site is tracked at zero. Setting
+   the fields at --tr-tight split 15.6px Newsreader across two tracking
+   values, which is the exact fault the scale was collapsed to remove. */
+.fld input, .fld select, .fld textarea,
+.pincheck__row input, .promo__row input { letter-spacing: normal; }
+
+/* A note set to a reading measure inside a form that fills its column gave the
+   form a third right edge. The rule spans the form; the sentence does not. */
+.contact__foot {
+  margin-top: var(--s-3); padding-top: var(--s-3);
+  border-top: 1px solid var(--line-soft);
+}
+.contact__foot .contact__note { margin-top: 0; padding-top: 0; border-top: 0; }
+
+/* Sub-heads inside prose were only ever h2 here, so the paragraph that follows
+   an h3 had no space above it and the two ran together. */
+.body-copy > h3 + p { margin-top: 1.1em; }
+
+/* --- A confirmation with nothing left to itemise -------------------------
+   The receipt is held for six hours. Open the page later than that and the
+   second column holds one short note beside a 776px column of nothing, and
+   the note carries a rule with an empty box above it. When there is no
+   receipt to show, the page is one column and the note falls under the copy
+   it qualifies. */
+.conf__grid:has(.receipt:empty) { grid-template-columns: minmax(0, var(--m-wide)); }
+.receipt:empty + .conf__stale { padding-top: 0; border-top: 0; }
+
+/* The two source frames are not balanced against each other: measured mean
+   luminance 126.8 / 120.5, standard deviation 59.5 / 69.6. Grading each to the
+   same mid-tone and the same contrast is what makes one grade read as one
+   commission rather than as a filter over two snapshots. */
+.people__grid .person:first-child .person__fig img {
+  filter: grayscale(1) contrast(1.06) brightness(0.95);
+}
+.people__grid .person:last-child .person__fig img {
+  filter: grayscale(1) contrast(0.92) brightness(0.99);
+}
+
+/* --ink-mute on the sand ground is 4.46:1 — half a point short at 11px. */
+.versus h3 { color: var(--ink-soft); }
+.versus__b h3 { color: var(--indigo); }
+
+/* --- The bag's own lines on a phone --------------------------------------
+   The phone breakpoint pushed the price onto a row of its own, where it sat
+   at the left with 280px of nothing to its right and cost 55px a line. The
+   bag's lines do need two rows — they carry a stepper and a remove control,
+   which the checkout's do not — but the money belongs on the right of the
+   first row, level with the name, which is where it is at every other width
+   and in every other list on this site. */
+@media (max-width: 620px) {
+  .cart__lines .line {
+    grid-template-columns: 3.4rem 1fr auto;
+    gap: var(--s-2);
+  }
+  .cart__lines .line__price {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: start;
+    font-size: var(--t-s);
+  }
+}
+
+/* Range & routines, continued — in the split band the words have a whole
+   column, not the 46ch measure the full-bleed band caps them at. */
+.band--split .band__copy { max-width: none; }
+.band--split .band__h2 { max-width: 18ch; }
+.band--split .band__sub { max-width: var(--m-read); }
+
+/* Range & routines, continued — the comparison's 14px text was inheriting the
+   body leading and adding a tenth line-height to that size. It takes one the
+   site already sets. */
+.cmp__for, .cmp__facts dd { line-height: 1.5; }
