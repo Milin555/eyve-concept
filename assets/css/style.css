@@ -4214,3 +4214,355 @@ dd a:not(.tlink):not(.btn):not([class]) {
    body leading and adding a tenth line-height to that size. It takes one the
    site already sets. */
 .cmp__for, .cmp__facts dd { line-height: 1.5; }
+
+/* --- The payload: four groups that read as four groups --------------------
+   The group label and the ingredient rows beneath it were both mono, both
+   uppercase, both in the left column of the same two-column row — so four
+   groups read as thirteen undifferentiated rows. The group now takes the
+   display face at sub-head size and spans the row; its note is the lede for
+   the rows under it, not the right-hand cell of a data row. */
+#carries .inci .inci__grp {
+  grid-template-columns: 1fr;
+  row-gap: 0;
+  border-bottom: 0;
+  margin-top: var(--s-5);
+  padding-bottom: 0.4rem;
+}
+#carries .inci li.inci__grp:first-child { margin-top: 0; }
+#carries .inci .inci__grp .inci__group {
+  margin-top: 0; padding-top: 0;
+  font-family: var(--display);
+  font-size: var(--t-h3);
+  font-weight: 300;
+  letter-spacing: var(--tr-mono-sm);
+  line-height: 1.2;
+  color: var(--ink);
+}
+#carries .inci .inci__grp .inci__note {
+  margin-top: 0.85rem; padding-top: 0;
+  max-width: var(--m-wide);
+}
+@media (max-width: 700px) {
+  #carries .inci .inci__grp { margin-top: var(--s-4); }
+}
+
+/* --- The actives, as jobs rather than a 1,600px flat list ----------------
+   The formula section was the best-argued thing on the page and the least
+   legible: one `.inci` list where the group headers ("Synthesis — where
+   pigment is made") carried exactly the same mono-uppercase label treatment
+   as the active names under them, so nothing outranked anything and fifteen
+   identical 48px rows ran for 1,559px — the same texture as the `.steps`
+   list two sections below it.
+
+   Rebuilt as one block per job: the job's name sits in its own left rail in
+   the display face, and its actives sit beside it in a two-up grid. Three
+   ranks now instead of one, the rule structure nests instead of repeating,
+   and the section loses about a third of its height without losing a word. */
+.jobs { margin-top: var(--s-4); border-top: 1px solid var(--ink); }
+.jobs__g {
+  display: grid;
+  grid-template-columns: minmax(0, var(--sp3)) minmax(0, 1fr);
+  column-gap: var(--gap);
+  padding-block: var(--s-4);
+  border-bottom: 1px solid var(--line);
+}
+.jobs__g:last-child { border-bottom: 0; padding-bottom: 0; }
+.jobs__n {
+  display: block; font-family: var(--mono); font-size: var(--t-label-sm);
+  letter-spacing: var(--tr-mono); color: var(--ink-mute);
+}
+.jobs__lab h3 {
+  margin-top: 0.55rem; font-family: var(--display); font-weight: 200;
+  font-size: clamp(1.3rem, 2.1vw, 1.8rem); letter-spacing: var(--tr-display);
+  line-height: 1.1; color: var(--ink);
+}
+.jobs__lab p {
+  margin-top: 0.6rem; font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono-sm); text-transform: uppercase;
+  color: var(--indigo); line-height: 1.65;
+}
+.jobs__list {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: var(--s-3) var(--gap); align-content: start;
+}
+.jobs__list li { padding-top: 0.85rem; border-top: 1px solid var(--line-soft); }
+.jobs__list b {
+  display: block; font-family: var(--display); font-weight: 500;
+  font-size: var(--t-m); letter-spacing: var(--tr-tight); line-height: 1.25;
+  color: var(--ink); text-transform: none;
+}
+.jobs__list span {
+  display: block; margin-top: 0.45rem; font-size: var(--t-s);
+  color: var(--ink-soft); line-height: 1.6;
+}
+@media (max-width: 880px) {
+  .jobs__g { grid-template-columns: 1fr; row-gap: var(--s-3); }
+  .jobs__lab h3 { margin-top: 0.35rem; }
+}
+
+/* --- The buy column, in two halves rather than ten stacked blocks --------
+   "Formulated for" sat below the delivery assurances and the PIN check, so
+   the one line that tells you whether the product is for you at all arrived
+   after the shipping terms, and the PIN field was wedged between two pieces
+   of prose. It now closes the benefits list it belongs to — no rule of its
+   own, so the column reads as product, then commerce, rather than as ten
+   blocks divided by hairlines of one weight. */
+.pdp__benefits + .pdp__solves {
+  margin-top: 0.85rem; padding-top: 0; border-top: 0;
+}
+
+/* --- About: the three refusals -------------------------------------------
+   The strongest writing on the site was three "we will not" sentences run
+   together inside one paragraph of an h3 subsection, ranked exactly like the
+   subsection about grey cast under it. Three refusals are three refusals: the
+   block is set off from the column, and each one is numbered and separately
+   rulable, so the promise reads as a promise rather than as body copy. */
+.creed {
+  margin-top: var(--s-4);
+  padding: var(--s-3) 0 var(--s-3) var(--s-3);
+  border-left: 2px solid var(--indigo);
+  background: var(--mist);
+}
+.creed > h3 { margin-top: 0; }
+.creed__list {
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+.creed__list li {
+  display: grid;
+  grid-template-columns: 2.4rem 1fr;
+  column-gap: var(--gap);
+  align-items: baseline;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+}
+.creed__n {
+  font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); color: var(--indigo);
+}
+.creed__list li > span + span {
+  font-size: var(--t-m); line-height: 1.55; color: var(--ink);
+}
+.creed__p { margin-top: var(--s-3); max-width: var(--m-read); }
+@media (max-width: 620px) {
+  .creed { padding-left: var(--s-2); }
+  .creed__list li { grid-template-columns: 1.9rem 1fr; }
+}
+
+/* The closing paragraph was capped at a reading measure inside a panel whose
+   rules already ran to the panel edge, giving the block a third right edge.
+   The panel carries an even inset instead, and everything in it shares it. */
+.creed { padding-right: var(--s-3); }
+.creed__p { max-width: none; }
+@media (max-width: 620px) { .creed { padding-right: var(--s-2); } }
+
+/* `auto-fit` sized the item grid from the group's own content, so a group of
+   four ran three columns and left an orphan on a second row, a group of two
+   ran two, and a group of one ran one — three different column counts down a
+   single block. Fix the grid at two, and let a group that holds one active
+   take the whole width rather than leaving half a row empty beside it. */
+.jobs__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.jobs__list li:only-child { grid-column: 1 / -1; }
+.jobs__list li:only-child span { max-width: var(--m-read); }
+@media (max-width: 880px) { .jobs__list { grid-template-columns: 1fr; } }
+
+/* Range & routines, continued — the price of a routine, argued once.
+   The buy bar used to print "Separately X" and the price, and then a note
+   directly underneath printed X, the WELCOME15 figure and the price again,
+   in prose, in a box 470px wide inside a 1326px row. One block now carries
+   the three figures, under the same three labels the comparison on the
+   Protocol page uses, and the code's rule sits beside the button. */
+.proto__buy { align-items: stretch; }
+.buysum {
+  margin: 0;
+  flex: 1 1 20rem; min-width: min(100%, 19rem); max-width: 30rem;
+  align-self: center;
+}
+.buysum > div {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: var(--s-3);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(22,23,58,0.10);
+}
+.buysum > div:last-child { border-bottom: 0; padding-bottom: 0; }
+.buysum dt {
+  font-family: var(--mono); font-size: var(--t-label);
+  letter-spacing: var(--tr-mono); text-transform: uppercase;
+  color: var(--ink-mute); line-height: 1.6;
+}
+.buysum dd {
+  margin: 0; text-align: right;
+  font-family: var(--mono); font-size: var(--t-small);
+  letter-spacing: var(--tr-mono-sm); line-height: 1.5;
+  color: var(--ink-soft);
+}
+.buysum__now dt { color: var(--ink); }
+.buysum dd.proto__buy-now {
+  margin-top: 0; justify-content: flex-end;
+  font-size: var(--t-num-lg); color: var(--ink);
+}
+.buysum__act {
+  flex: 1 1 22rem; max-width: 34rem;
+  display: flex; flex-direction: column; align-items: flex-start;
+  justify-content: center; gap: var(--s-2);
+}
+.buysum__note {
+  margin: 0; max-width: 46ch;
+  font-family: var(--mono); font-size: var(--t-label);
+  line-height: 1.75; letter-spacing: var(--tr-tight);
+  color: var(--ink-mute);
+}
+@media (max-width: 720px) {
+  .buysum, .buysum__act { max-width: none; }
+}
+
+/* Range & routines, continued — the same note on the shop page, where the
+   three routines are all on screen and the figures belong in the comparison
+   rather than in a paragraph. Full width, so it does not leave a column of
+   void beside five lines of mono. */
+.codenote {
+  margin-top: var(--s-4);
+  padding: 0.9rem 1.15rem;
+  background: var(--sand-pale);
+  border-left: 2px solid var(--sand);
+  font-family: var(--mono); font-size: var(--t-label);
+  line-height: 1.75; letter-spacing: var(--tr-tight);
+  color: var(--ink-soft);
+}
+.codenote b {
+  color: var(--ink); font-weight: 500;
+  letter-spacing: var(--tr-mono); text-transform: uppercase;
+}
+.codenote .tlink { font-size: var(--t-label); letter-spacing: var(--tr-tight); }
+
+/* --- The Science: a way out of the argument -------------------------------
+   The page the whole range rests on carried no route to the range: seven
+   sections, no link out, while the left rail of the payload section sat empty
+   below its own standfirst. The two destinations the argument implies — the
+   formulations, and the order they are used in — go there. */
+#carries .sci__more {
+  display: grid;
+  justify-items: start;
+  row-gap: 0.95rem;
+  margin-top: var(--s-4);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+}
+
+/* The job name was set at its own clamp and landed on 28.8px — the only
+   selector on the site at that size, and a nineteenth step in an eighteen-step
+   scale. It does not need a size of its own to outrank the actives beside it:
+   it is already the only display face in the block. Put it back on `--t-h3`
+   with the leading the other h3s use. */
+.jobs__lab h3 { font-size: var(--t-h3); line-height: 1.2; }
+
+/* Range & routines, continued — the code's rule reads across the bar, not
+   down one half of it. Held beside the button it wrapped at 46 characters
+   inside a 570px column and left the column ragged; on its own line under a
+   hairline it is two lines at the measure the site already uses for a note. */
+.proto__buy { align-items: center; }
+.buysum { flex: 1 1 20rem; max-width: 34rem; align-self: center; }
+.buysum__note {
+  flex: 1 0 100%;
+  max-width: var(--m-wide);
+  margin-top: var(--s-2); padding-top: var(--s-2);
+  border-top: 1px solid rgba(22,23,58,0.10);
+}
+
+/* Range & routines, continued — the action cell is now only the button, so
+   it sizes to it and sits against the right edge of the bar. */
+.buysum__act {
+  flex: 0 1 auto; max-width: none;
+  display: flex; align-items: center; justify-content: flex-end;
+}
+@media (max-width: 720px) {
+  .buysum__act { flex: 1 0 100%; justify-content: stretch; }
+  .buysum__act .btn { width: 100%; }
+}
+
+/* Range & routines, continued — three cells on one row: the three figures,
+   the rule that governs them, the button. Under the bar the note was two
+   short lines against 470px of nothing; between the figures and the button
+   it is the same two lines and the bar closes. */
+.proto__buy .buysum__note {
+  flex: 1 1 13rem;
+  max-width: none;
+  margin-top: 0; padding-top: 0;
+  border-top: 0;
+  border-left: 1px solid rgba(22,23,58,0.10);
+  padding-left: var(--s-3);
+  align-self: center;
+}
+@media (max-width: 900px) {
+  .proto__buy .buysum__note {
+    flex: 1 0 100%;
+    border-left: 0; padding-left: 0;
+    margin-top: var(--s-2); padding-top: var(--s-2);
+    border-top: 1px solid rgba(22,23,58,0.10);
+  }
+}
+
+/* The reel card's heading and its first paragraph were touching: the copy
+   column is a flex column, `.body-copy` carries no margin of its own, and the
+   `p + p` rule that spaces the rest of the column cannot reach the first one.
+   Measured at 1440 the gap between the h2's box and the paragraph under it is
+   0px, against 17px between the paragraphs below it. */
+.reelcard__copy .h2 + .body-copy { margin-top: var(--s-3); }
+
+/* Range & routines, continued — the contents list below 1000px.
+   The larger-thumbnail variant overrode grid-template-columns at every width,
+   so under 1000px the row still declared a third column that nothing sat in:
+   the price was being pushed into column 2 by a separate rule while an empty
+   track held the space. Two columns, declared once, and the picture starts
+   level with the step number instead of floating in the middle of the row. */
+@media (max-width: 1000px) {
+  .proto__rows--lg .proto__row { grid-template-columns: clamp(4.5rem, 14vw, 6rem) 1fr; }
+  .proto__rows--lg .proto__row-fig { align-self: start; }
+}
+
+/* Range & routines, continued — a saving is not a net quantity.
+   The slot beside the price on a product card holds "100 ml"; on a routine
+   card it was holding "Save ₹1,191" in the same grey mono, so one component
+   was again running two different meanings. Everywhere else on the site a
+   saving is a sand pill; here too. */
+.pcard__save {
+  color: #7A5A28;
+  background: var(--sand-pale);
+  padding: 0.22rem 0.45rem;
+  border-radius: 2px;
+}
+
+/* On the two pages where "Over a course" follows the directions list with
+   nothing in between (moisturiser, night cream), the last step's bottom
+   hairline and the course block's own top hairline stack up as two parallel
+   rules 19px apart with nothing between them. The step list already ends on
+   a rule; the course block does not need a second one. */
+.steps + .coursewrap { border-top: 0; padding-top: 0; }
+
+/* --- Heading hierarchy, settled ------------------------------------------
+   Measured before the pipeline: 8 of 21 pages had a title that outranked its
+   own sections. The area agents took it to 14 by introducing a `.h1` class —
+   but two of them defined it at different sizes, and the product pages were
+   left behind: `.pdp__title` renders at 40px while `.band__h2`, a caption
+   floating over a photograph, renders at 51.2px. The name of the thing being
+   sold was the second-largest heading on its own page.
+
+   One definition, last in the cascade, so it wins whatever came before. */
+
+/* The page title. One size, whether the page calls it .h1 or .pdp__title. */
+.h1,
+h1.pdp__title {
+  font-size: clamp(2.1rem, 4vw, 3.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.016em;
+}
+
+/* A caption over a photograph is not a page title. It sits below the section
+   headings it used to tower over. */
+.band__h2 { font-size: clamp(1.5rem, 2.6vw, 2.2rem); }
+
+/* The homepage hero is the exception that proves the rule: there the title is
+   the display, and nothing else on the page comes near it. */
