@@ -4600,3 +4600,65 @@ h1.pdp__title {
             mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 3rem), transparent 100%);
   }
 }
+
+/* --- Solo reelcards: no duplicate video card ------------------------------
+   main.js clones every [data-reel] card once so a multi-item rail (the
+   .reels__rail gallery on index.html) can loop seamlessly. Each PDP's
+   .reelcard section carries exactly one real video, so that clone is not a
+   loop seam — it is a second, identical, aria-hidden card that lands below
+   the copy in the grid (measured: cleanser, serum, moisturiser,
+   pigment-routine and barrier-routine all showed two "0:26"/"0:07"/etc.
+   thumbnails stacked, the second one dead weight). Hiding the clone here
+   leaves main.js untouched; with nothing left to loop, the drift is inert. */
+.reelcard .reel[aria-hidden="true"] { display: none; }
+
+/* --- Homepage-only fixes (index.html / shop.html) -----------------------
+   Found by full-page screenshot review at 390px and 1440px. */
+
+/* index.html "Delivered, not applied" texture break: at the 56vh mobile
+   band height the crop shows much more of the vertical frame than at
+   desktop's min(72vh,660px), which drags the brightly-lit product carton
+   label into the caption/headline zone. The existing gradient (46% tall,
+   fading to 0 opacity well before the headline) was tuned for a skin-toned
+   background, not a near-white pack shot, so 70-90% dark overlay on white
+   still reads as light. Scoped to this one image via .band--wash so the
+   shared .band component used elsewhere is untouched. */
+@media (max-width: 1000px) {
+  .band--wash::after {
+    height: 74%;
+    background: linear-gradient(to top,
+      rgba(22,23,58,0.97) 0%,
+      rgba(22,23,58,0.94) 60%,
+      rgba(22,23,58,0) 100%);
+  }
+  .band--wash img { object-position: 50% 16%; }
+}
+
+/* shop.html: .pcard__spec is a 2-line -webkit-line-clamp with a min-height
+   tuned for the desktop 11px label size (2 * 11px * 1.58 line-height =
+   2.16rem). The <520px override drops the font to 10px but kept the same
+   min-height, so the box sits ~3px taller than its own 2-line content and
+   the top sliver of the clamped 3rd line shows through underneath the
+   ellipsis (visible on the Protocol card, whose 5-part spec is the only one
+   long enough to wrap to 3 lines). Re-tuned to the smaller font's own
+   2-line height. */
+@media (max-width: 520px) {
+  .pcard__spec { min-height: 2rem; }
+}
+
+/* shop.html .trust strip: align-items:center on .trust li centers the
+   bullet against the full (sometimes two-line) height of the claim, so on
+   items that wrap ("Formulated by a doctor and pharmacist", "Neo-Liposomal
+   in every formula", "Paraben, sulfate and silicone free") the dot floats
+   between the two lines instead of sitting on the first. The <760px rule
+   already fixes this with flex-start + a nudge; applying the same pattern
+   at every width instead of only below 760px. */
+.trust li { align-items: flex-start; }
+.trust li::before { margin-top: 0.5em; }
+
+/* --- Newsletter confirmation on a dark ground --------------------------
+   .formdone was built for a light section (contact). The newsletter block
+   is the dark indigo one, and the light-mode wash read as a foreign card
+   dropped into it rather than a confirmation belonging to the same section. */
+.news .formdone { background: var(--on-dark-fill); color: var(--on-dark-2); border-left-color: var(--sand); }
+.news .formdone b { color: var(--paper); }

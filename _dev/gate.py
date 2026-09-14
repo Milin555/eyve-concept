@@ -16,6 +16,8 @@ CHECKS = [
     ('case sensitivity',     'casecheck.py', r'every reference matches a file', None),
     ('css coverage',         'cssaudit.py', r'no rule in CSS \(0\)',      None),
     ('css reconciliation',   'reconcile.py', r'nothing lost|1 rules lost', None),
+    ('paint',                'paint.py',   r'every page paints inside',   None),
+    ('heading hierarchy',    'headings.py', r'(\d+)/(\d+) pages have a title', 'ratio'),
 ]
 
 os.chdir(ROOT)

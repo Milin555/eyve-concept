@@ -1301,6 +1301,13 @@
       var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
       if (!reelCards.length || (mq && mq.matches)) return;
 
+      /* A single card cannot loop. Five product pages carry a `reelcard`
+         section holding exactly one film, and cloning that put a second,
+         identical copy of the same video directly under the first. Only a
+         rail with enough films in it to run past its own edge has anything
+         to roll. */
+      if (reelCards.length < 3) return;
+
       /* One extra set of cards so the wrap has no seam. The copies are
          furniture: hidden from assistive tech and unreachable by keyboard,
          since the originals already carry every reel exactly once. */
