@@ -250,7 +250,17 @@ try:
            "localStorage.setItem('eyveReceipt', JSON.stringify({at:%d,lines:[{k:'serum',n:1}],"
            "promo:'',disc:0,sub:1499,ship:0,cod:0,pin:'400001',pay:'upi'}));1" % stale)
     b.goto(f"{ROOT}/order-confirmed.html", wait=1.0)
-    ok("a seven-hour-old receipt is not replayed", b.eval("location.pathname").endswith("index.html"))
+    # The itemised lines expire so an old order is not replayed as a new one.
+    # The order NUMBER does not: this page's own copy says "there is no
+    # order-status page, so keep this number", and an earlier version deleted
+    # it and bounced the reader to the homepage without a word.
+    ok("a seven-hour-old receipt is not replayed",
+       b.eval("document.querySelectorAll('.receipt__line').length") == 0)
+    ok("but the order number it told you to keep survives",
+       b.eval("(document.getElementById('ordNo')||{}).textContent") == "EYV-999999")
+    ok("and the page says why the receipt is gone",
+       b.eval("(function(){var e=document.querySelector('[data-receipt-stale]');"
+              "return !!e && !e.hidden;})()") is True)
     fresh = int(time.time() * 1000) - 60 * 1000
     b.eval("localStorage.setItem('eyveOrder','EYV-888888');"
            "localStorage.setItem('eyveReceipt', JSON.stringify({at:%d,lines:[{k:'serum',n:1}],"
