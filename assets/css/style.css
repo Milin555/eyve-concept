@@ -4882,3 +4882,39 @@ h1.pdp__title {
 @media (min-width: 1001px) {
   .founder__grid { align-items: center; }
 }
+
+/* --- The trailing card, third attempt ------------------------------------
+   This rule has now been written three ways, and the first two each fixed one
+   problem by causing the other.
+
+   Originally an orphaned last card spanned the row and became a different
+   component — figure left, copy right. That was judged wrong ("one card in
+   five behaving differently costs more than a trailing empty cell") and
+   exempted, which left the card at half width with nothing beside it:
+   measured at 390px on the home page, 182 x 443px of empty ground next to
+   the night cream, on a grid only 350px wide.
+
+   Both readings were right. The mistake was treating it as a choice between
+   a different component and a hole. The card spans the row AND keeps its own
+   shape — picture above the name, the same as its four siblings, just wider.
+   No hole, no second component, and the product gets a 350px image instead
+   of a 168px one on the page where it is hardest to see. */
+@media (max-width: 700px) {
+  .prods__grid > .pcard:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .prods__grid > .pcard:last-child:nth-child(odd) .pcard__link {
+    /* align-items:center survives from the old horizontal rule, and in a flex
+       column it centres the figure and the copy while the price stays left. */
+    display: flex; flex-direction: column; align-items: stretch;
+  }
+  .prods__grid > .pcard:last-child:nth-child(odd) .pcard__body { padding-top: 1.3rem; }
+}
+
+/* #range carries its own copy of the old exemption, and an id outranks the
+   rule above, so the home page kept the hole. Same treatment, same reasoning. */
+@media (max-width: 700px) {
+  #range .prods__grid > .pcard:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  #range .prods__grid > .pcard:last-child:nth-child(odd) .pcard__link {
+    display: flex; flex-direction: column; align-items: stretch;
+  }
+  #range .prods__grid > .pcard:last-child:nth-child(odd) .pcard__body { padding-top: 1.3rem; }
+}
