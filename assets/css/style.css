@@ -4870,3 +4870,15 @@ h1.pdp__title {
    a photograph. They now render as taken. */
 .people__grid .person__fig { background: var(--indigo-wash); }
 .people__grid .person__fig img { mix-blend-mode: normal; filter: none; }
+
+/* --- The founder's text column stops floating at the top ------------------
+   With the overhang gone the two columns no longer matched: the portrait runs
+   664px and the copy beside it ends 492px in, leaving 172px x 718px of empty
+   ground under "Meet the founders" and beside the picture. Top-aligned, that
+   reads as a column that ran out rather than a column that was placed.
+   Centred against the portrait, the same space sits 86px above and 86px
+   below, which is the ordinary editorial treatment for a picture on one side
+   and a standfirst on the other. */
+@media (min-width: 1001px) {
+  .founder__grid { align-items: center; }
+}
