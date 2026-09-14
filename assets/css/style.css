@@ -1404,16 +1404,23 @@ table { border-collapse: collapse; width: 100%; }
 /* How to use / Results timeline */
 .steps { display: grid; gap: 0; border-top: 1px solid var(--line); }
 .steps li {
-  column-gap: var(--gap);
   padding: 1.05rem 0;
   border-bottom: 1px solid var(--line-soft);
   display: grid;
-  grid-template-columns: 3.2rem 1fr;
-  gap: var(--s-3);
+  /* "01" and "Week 12" share this column. A fixed 3.2rem sized it for the
+     first and ran the second straight through the sentence beside it. */
+  grid-template-columns: minmax(3.2rem, max-content) 1fr;
+  row-gap: var(--s-1);
+  column-gap: var(--gap);
   align-items: baseline;
 }
 .steps .n {
+  /* Two content types share this cell: "01" and "Week 12". A fixed 5.5ch sized
+     it for the first and let the second run 84px into an 73px box, straight
+     through the sentence beside it. Size it to its content instead. */
   min-width: 5.5ch;
+  width: max-content;
+  max-width: 100%;
   white-space: nowrap;
   font-family: var(--display);
   font-weight: 200;
@@ -2866,4 +2873,41 @@ dd a:not(.tlink):not(.btn):not([class]) {
   .policy__grid { grid-template-columns: 1fr; }
   .policy__toc { position: static; border-right: 0; border-bottom: 1px solid var(--line-soft); padding-bottom: var(--s-3); }
   .policy__toc ol { columns: 2; column-gap: var(--gap); }
+}
+
+/* The pack names some actives; the formula has more. Saying which is which is
+   the difference between a specification and a contradiction. */
+.inci__count {
+  margin-bottom: var(--s-2);
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-mono-sm);
+  line-height: 1.7;
+  color: var(--ink-mute);
+  max-width: var(--m-read);
+}
+
+.conf__stale {
+  font-size: var(--t-small); line-height: 1.65; color: var(--ink-soft);
+  padding-top: var(--s-3); border-top: 1px solid var(--line-soft);
+}
+
+/* --- Footer tiers --------------------------------------------------------
+   One 477px footer of 22 links is proportionate on an 8,700px product page
+   (5%) and absurd at the moment of payment: 29% of the bag, 30% of the
+   confirmation, 17% of checkout. A full sitemap inside a payment flow is a
+   leak by design. Three tiers, set by a class on <body>. */
+/* Keep the brand and Support — contact, shipping, returns. That is what a
+   buyer wants within reach of the bag. The eight-link Shop sitemap, Learn and
+   Legal are a sideways exit from a purchase. */
+.pg--utility .ftr__grid > div:nth-child(2),
+.pg--utility .ftr__grid > div:nth-child(3),
+.pg--utility .ftr__grid > div:nth-child(5) { display: none; }
+.pg--utility .ftr__grid { grid-template-columns: 1.6fr 1fr; }
+
+.pg--pay .ftr__grid { display: none; }
+.pg--pay .ftr { padding-block: var(--s-4); }
+.pg--pay .ftr__base { margin-top: 0; }
+@media (max-width: 900px) {
+  .pg--utility .ftr__grid { grid-template-columns: 1fr; }
 }

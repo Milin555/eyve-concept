@@ -909,10 +909,18 @@
     try { r = JSON.parse((store && store.getItem('eyveReceipt')) || 'null'); } catch (e) {}
     /* A receipt survives a refresh, not a week. Coming back later should not
        re-render an old order as though it had just been placed. */
+    /* An old receipt should stop being replayed as though the order were new.
+       It should NOT take the order number with it: this page's own copy says
+       "there is no account area and no order-status page, so keep this number",
+       and deleting it sent the reader to the homepage without a word. The
+       lines go; the number and the date stay. */
     var FRESH = 6 * 60 * 60 * 1000;
-    if (r && (!r.at || Date.now() - r.at > FRESH)) {
-      try { store.removeItem('eyveReceipt'); store.removeItem('eyveOrder'); } catch (e) {}
+    var staleReceipt = r && (!r.at || Date.now() - r.at > FRESH);
+    if (staleReceipt) {
+      try { store.removeItem('eyveReceipt'); } catch (e) {}
       r = null;
+      var note = $('[data-receipt-stale]');
+      if (note) note.hidden = false;
     }
     if (r && r.lines && r.lines.length) {
       var total = Math.max(0, r.sub - (r.disc || 0)) + (r.ship || 0) + (r.cod || 0);
