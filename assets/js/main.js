@@ -167,6 +167,32 @@
     });
   }
 
+  /* --- The ingredient table folds on a phone ---------------------------
+     It ships open, so with this script blocked the table is simply there, as
+     it always was. On a small screen it starts closed: it is a lookup table,
+     and leaving it open cost science eight consecutive phone screens of text
+     with nothing to look at. Reopened state is not remembered — a fold that
+     silently stays open is worse than one that behaves the same every time. */
+  var folds = $$('details.fold');
+  if (folds.length) {
+    var foldQuery = window.matchMedia && window.matchMedia('(max-width: 760px)');
+    var setFolds = function () {
+      var small = foldQuery ? foldQuery.matches : window.innerWidth <= 760;
+      folds.forEach(function (d) {
+        /* Never re-close one the reader has opened during this visit. */
+        if (d.dataset.touched) return;
+        d.open = !small;
+      });
+    };
+    folds.forEach(function (d) {
+      d.addEventListener('toggle', function () {
+        if (d.open) d.dataset.touched = '1';
+      });
+    });
+    setFolds();
+    if (foldQuery && foldQuery.addEventListener) foldQuery.addEventListener('change', setFolds);
+  }
+
   /* --- Reveal -----------------------------------------------------------
      One observer, one class, then the element is forgotten and its transition
      stripped so the compositing layer is released. Measuring every candidate on
@@ -1308,17 +1334,18 @@
          to roll. */
       if (reelCards.length < 3) return;
 
-      /* One extra set of cards so the wrap has no seam. The copies are
-         furniture: hidden from assistive tech and unreachable by keyboard,
-         since the originals already carry every reel exactly once. */
-      reelCards.forEach(function (card, i) {
-        var copy = card.cloneNode(true);
-        copy.setAttribute('aria-hidden', 'true');
-        copy.setAttribute('tabindex', '-1');
-        copy.removeAttribute('data-reel');
-        copy.addEventListener('click', function () { openViewer(i, card); });
-        reelRail.appendChild(copy);
-      });
+      /* Copies are furniture: hidden from assistive tech and unreachable by
+         keyboard, since the originals already carry every reel exactly once. */
+      var addSet = function () {
+        reelCards.forEach(function (card, i) {
+          var copy = card.cloneNode(true);
+          copy.setAttribute('aria-hidden', 'true');
+          copy.setAttribute('tabindex', '-1');
+          copy.removeAttribute('data-reel');
+          copy.addEventListener('click', function () { openViewer(i, card); });
+          reelRail.appendChild(copy);
+        });
+      };
 
       /* Snap and a continuous drift are two hands on the same axis. */
       reelRail.style.scrollSnapType = 'none';
@@ -1332,8 +1359,23 @@
         for (var i = 0; i < reelCards.length; i++) w += reelCards[i].offsetWidth + gap;
         setW = w;
       };
-      measure();
-      window.addEventListener('resize', measure);
+
+      /* The wrap jumps back by exactly one set, so the rail must hold one set
+         PLUS a screenful. With only one spare set, a window wider than a set
+         puts the far edge inside the viewport at the moment of the jump, and
+         the fifth reel is followed by blank ground before the first comes
+         round. Measured at 1680px: one set 1350px, visible 1680px, content
+         2952px against the 3030px needed — and that 78px shortfall is exactly
+         the empty space. Clone whole sets until there is no shortfall at this
+         width, and again if the window grows. */
+      var topUp = function () {
+        measure();
+        if (!setW) return;
+        var guard = 0;
+        while (reelRail.scrollWidth < setW + reelRail.clientWidth + 8 && guard++ < 8) addSet();
+      };
+      topUp();
+      window.addEventListener('resize', topUp);
 
       var SPEED = 22;                 /* px a second: slow enough to read a caption */
       var pos = reelRail.scrollLeft;

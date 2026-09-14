@@ -4918,3 +4918,38 @@ h1.pdp__title {
   }
   #range .prods__grid > .pcard:last-child:nth-child(odd) .pcard__body { padding-top: 1.3rem; }
 }
+
+/* --- The ingredient table folds on a phone ---------------------------------
+   Measured by walking each page a 844px screen at a time and counting screens
+   with no image, video or control on them. The ingredient tables are the
+   longest stretch of unbroken text on the site: 2696px on science, 1994px on
+   serum, 1740px on the night cream. Science ran eight phone screens of text
+   with nothing to look at; serum, cleanser and the night cream ran five.
+
+   It is a lookup table, not something anyone reads top to bottom, so on a
+   phone it folds to a single tappable row and opens on demand. Nothing is
+   removed and nothing is hidden from search or from a screen reader — the
+   element ships open and main.js closes it only on small screens, so with
+   JavaScript off the page behaves exactly as it did before. */
+.fold { border: 0; }
+.fold > .fold__sum {
+  display: none;                 /* desktop shows the table, as before */
+}
+@media (max-width: 760px) {
+  .fold > .fold__sum {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; cursor: pointer; list-style: none;
+    padding: 0.95rem 0; margin-top: var(--s-3);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono); font-size: var(--t-label);
+    letter-spacing: var(--tr-mono); text-transform: uppercase;
+    color: var(--ink);
+  }
+  .fold > .fold__sum::-webkit-details-marker { display: none; }
+  .fold__hint { color: var(--ink-mute); font-size: var(--t-label-sm); }
+  .fold__hint::after { content: " +"; }
+  .fold[open] > .fold__sum .fold__hint::after { content: " \2212"; }
+  .fold[open] > .fold__sum { border-bottom-color: transparent; }
+  .fold > .fold__sum:focus-visible { outline: 2px solid var(--indigo); outline-offset: 3px; }
+}
