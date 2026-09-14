@@ -4662,3 +4662,164 @@ h1.pdp__title {
    dropped into it rather than a confirmation belonging to the same section. */
 .news .formdone { background: var(--on-dark-fill); color: var(--on-dark-2); border-left-color: var(--sand); }
 .news .formdone b { color: var(--paper); }
+
+/* --- Carry the trailing-card decision through to the routines -------------
+   At 700px and under, a last card sitting alone in an odd position was made
+   to span the row and become a different component: figure left, copy right.
+   Someone later judged that wrong and wrote the exemption a few hundred lines
+   up — "one card in five behaving differently costs more than a trailing
+   empty cell" — but scoped it to #range, the five products on the home page.
+
+   Every `.prods__grid--3` on the site holds exactly three cards, so the third
+   matched :last-child:nth-child(odd) on all nine pages that carry one: shop,
+   cart, and seven product and routine pages. Measured at 390px on shop: cards
+   one and two were 168px wide with the figure above the copy, and card three
+   was 350px wide with a 140px figure beside it — narrow enough that its
+   "Steps 01 · 03 · 04" badge wrapped onto two lines across the product shots.
+
+   The principle was right the first time. It just was not carried through. */
+@media (max-width: 700px) {
+  .prods__grid > .pcard:last-child:nth-child(odd) { grid-column: auto; }
+  .prods__grid > .pcard:last-child:nth-child(odd) .pcard__link { display: flex; }
+  .prods__grid > .pcard:last-child:nth-child(odd) .pcard__body { padding-top: 1.3rem; }
+}
+
+/* --- Serum's "Notes from use": two written examples, not three -----------
+   The shared reviews grid (.revs__grid) is built for the homepage's three
+   cards: a feature spanning two of three columns and two rows, closed
+   beneath by two ordinary cards filling the third column. Serum's PDP is the
+   only page reusing this component with exactly two cards - one feature, one
+   plain - so the feature still spans two rows in column 3, and the lone
+   plain card fills only the top of column 3, leaving row 2 of column 3 bare.
+   The same shape recurs at the 1000px breakpoint, where the feature spans
+   both columns and the lone plain card fills only half of row 2.
+   This modifier stops the feature from spanning at all: two cards, two equal
+   columns, side by side, nothing left for either one to leave empty. */
+.revs__grid--pair,
+.revs__grid--pair:has(.rev--feature) { grid-template-columns: repeat(2, 1fr); row-gap: var(--s-5); }
+.revs__grid--pair .rev--feature { grid-column: auto; grid-row: auto; padding-top: var(--s-3); }
+.revs__grid--pair .rev--feature blockquote { max-width: none; }
+@media (max-width: 620px) {
+  .revs__grid--pair,
+  .revs__grid--pair:has(.rev--feature) { grid-template-columns: 1fr; }
+}
+
+/* --- The founder's portrait, treated as a portrait ------------------------
+   The first pass cropped and graded this in CSS and it still read as a phone
+   snapshot of a woman standing in a room: she sat small in the frame, the
+   on-camera flash threw a hard double shadow onto the wall behind her, and a
+   flat mid-grey conversion left the hair charcoal and the wall muddy.
+
+   It is now framed as a portrait — chest up, ten percent headroom, filling
+   its own frame — which puts most of the shadow outside the crop, and the
+   tone curve is baked into the file rather than applied here: a half-strength
+   smoothstep that deepens the hair to black and lifts the wall to a clean
+   ground without touching the midtones her face lives in. Measured 111.7/64.2
+   before, 112.3/71.3 after: the same exposure, nearly seven points more
+   separation.
+
+   Because the grade is in the pixels now, the filter that used to do it here
+   would apply it twice. */
+.founder__plate img,
+.people__grid .person:first-child .person__fig img { filter: none; }
+
+/* Devam's frame is still graded here, retuned to land on the portrait's new
+   tonality rather than the old one: 120.5/69.6 -> 112.3/71.3. Two photographs
+   taken in different light still have to read as one commission. */
+.people__grid .person:last-child .person__fig img {
+  filter: grayscale(1) contrast(1.09) brightness(0.94);
+}
+
+/* --- Give the last few paragraphs a measure -------------------------------
+   Measured characters per line across six viewports. On a phone the site is
+   comfortable everywhere (35-56 cpl). From 768px up, four elements had no
+   measure at all and ran the full width of the shell:
+
+     .spec__method   1248px at 11px type   ~105 cpl
+     .codenote       1248px at 11px type   ~105 cpl
+     .steps li p     1151px                ~115 cpl
+     .rangekey       1248px at 14px type    ~89 cpl
+
+   Comfortable is 45-75 characters; past about 85 the eye starts losing its
+   place on the return sweep, and it is worst exactly where the type is
+   smallest. The site already has a token for this, and because `ch` is
+   relative to the element's own font size, one value gives each of them 72
+   characters a line whatever size they are set at. */
+.spec__method,
+.codenote,
+.rangekey,
+.steps li p { max-width: var(--m-wide); }
+
+/* --- Small print needs its own measure -----------------------------------
+   `.faq__aside-p` ran 707px of 14px type at the 768px breakpoint, about 101
+   characters a line. Capping it to the measure token brings it to 605px.
+
+   Measuring this turned up something larger, which this rule does NOT fix and
+   which is recorded here so the next person does not rediscover it: the token
+   is `--m-wide: 72ch`, but `ch` is the width of the digit zero, and in this
+   serif the average character is a good deal narrower than that. 72ch resolves
+   to 640px at 15.6px, and 640px of this face holds about 95 characters, not
+   72. So the site's standard prose measure is ~95 cpl while its own token name
+   claims 72. Comfortable is 45-75.
+
+   Narrowing the token is the single biggest readability lever left on the
+   site, and it reflows every page that sets prose — so it wants its own pass
+   with the full gate behind it, not an append at the end of a round. */
+.body-copy p,
+.faq__aside-p,
+.cmp__for { max-width: var(--m-wide); }
+
+/* --- What the measure token actually delivers -----------------------------
+   `--m-wide` was 72ch, and `ch` is the width of the digit zero. In Newsreader
+   the average character is a good deal narrower than a zero, so 72ch was
+   holding about 95 characters a line, not 72. The token's name described an
+   intention the type never carried out, and every prose column on the site
+   inherited it — all fifteen uses are prose measures.
+
+   Measured across terms, privacy, science, refund and about, longest line:
+
+     72ch   87-97 characters     <- what was shipping
+     60ch   72-78
+     56ch   72-76                <- this
+     52ch   67-76
+
+   56ch is the most conservative value that brings the longest lines inside
+   the comfortable 45-75 band, so the change is a re-measure rather than a
+   redesign. This is the answer to "is there too much text": there is not —
+   16,479 words over 21 pages, no paragraph anywhere over 100 words, and 14
+   of 21 pages with none over 70. The prose was not too long. The lines were. */
+:root { --m-wide: 56ch; }
+
+/* The last two prose elements with no measure of their own: the "Formulated
+   for" line in every product's buy box (612px of 14px type, 98 characters a
+   line) and the night routine's rows (612px of 15.6px, 86). */
+.pdp__solves,
+.nightlist__row p { max-width: var(--m-wide); }
+
+/* --- A card that cannot say what is in the bundle -------------------------
+   .pcard__spec clamps to two lines so cards in a row keep a common height.
+   Nine pages share the component, and on eight of them every spec fits. The
+   Protocol's does not: "Cleanser · serum · moisturiser · sunscreen · night
+   cream" is 56 characters, and at 390px it measured 32px shown of 45px — the
+   third line, and with it the night cream, simply gone. A card selling a
+   five-step bundle was listing four of them and an ellipsis.
+
+   The stylesheet already argues this case about the buy bar a few hundred
+   lines up: a thing that cannot say what it is selling is not doing its job.
+   The clamp goes to three lines at this width; min-height is left alone, so
+   the shorter specs still reserve two and only the long one grows. */
+@media (max-width: 520px) {
+  .pcard__spec { -webkit-line-clamp: 3; }
+}
+
+/* --- The portraits stay in colour ----------------------------------------
+   An earlier pass in this session desaturated the founders so the home page
+   and about would match each other. That was the wrong trade: it made a real
+   photograph of a real person look like a stock treatment, and matching two
+   pages is not worth that. Both are natural colour now — the blue she is
+   actually wearing — and the only thing kept from that pass is the tighter
+   frame, which was a framing fix rather than a colour one. */
+.founder__plate img,
+.people__grid .person__fig img,
+.people__grid .person:first-child .person__fig img,
+.people__grid .person:last-child .person__fig img { filter: none; }
