@@ -4962,3 +4962,16 @@ h1.pdp__title {
   .fold__hint { white-space: nowrap; flex: none; }
   .fold > .fold__sum { flex-wrap: nowrap; }
 }
+
+/* --- Touch targets, the last few pixels -----------------------------------
+   The coarse-pointer block above already lifts every standalone link off its
+   type height; measured on a phone with touch emulated it lands them at 37-40px.
+   That clears the WCAG AA floor of 24px with room to spare, but Apple's and
+   Google's guidance is 44, and a breadcrumb at 37px beside a thumb is the
+   difference between hitting it and hitting the one under it. */
+@media (pointer: coarse) {
+  .tlink { padding-block: 0.82rem; }
+  .ftr li a, .ftr__addr a { padding-block: 0.72rem; }
+  .crumbs a { padding-block: 0.78rem; }
+  .contact__list a, .conf__meta a { padding-block: 0.62rem; }
+}
