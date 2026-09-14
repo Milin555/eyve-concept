@@ -4823,3 +4823,50 @@ h1.pdp__title {
 .people__grid .person__fig img,
 .people__grid .person:first-child .person__fig img,
 .people__grid .person:last-child .person__fig img { filter: none; }
+
+/* --- The portrait stops hanging into the reel band ------------------------
+   The founder's picture was given a negative bottom margin so it crossed the
+   seam into the dark band below, with the reels section padded to make room
+   and the caption absolutely positioned onto that band with its own dark
+   background. The intent was a page that reads as composed rather than
+   stacked.
+
+   It does not read that way. An earlier pass already recorded that the
+   overhang "read as a clipping bug" and responded by crossing further rather
+   than not at all, and it has now been read the same way a second time,
+   independently. Measured at 1024px the caption cleared the reels heading by
+   24px — close enough that the portrait looked like it belonged to the reels
+   section rather than to the founders.
+
+   Two independent readings of the same effect as a mistake is enough. The
+   picture sits inside its own section, the caption sits under it on the light
+   ground it is actually printed on, and the band below starts clean. */
+@media (min-width: 1001px) {
+  .founder { padding-bottom: var(--s-section-sm); }
+  .founder__grid { align-items: start; }
+  .founder__grid > div { padding-bottom: 0; }
+  .founder__fig { margin-bottom: 0; box-shadow: none; }
+  .founder__plate { box-shadow: 0 14px 36px rgba(10, 11, 30, 0.10); }
+  .founder__cap {
+    position: static;
+    margin-top: 0.9rem;
+    padding: 0;
+    background: none;
+    color: var(--ink-mute);
+  }
+  .reels { padding-top: var(--s-section); }
+}
+
+/* --- The founders are photographed, not tinted ----------------------------
+   The pair carried `mix-blend-mode: luminosity` over an indigo ground, which
+   is what made both faces render purple. The reasoning was that two portraits
+   shot against two different blank walls read as two snapshots unless one
+   grade unifies them, and that is true as far as it goes — but the price was
+   that neither founder appeared in their own colouring, on the page that
+   introduces them by name. A real person shown in a brand tint reads as stock
+   art, which is the opposite of what this section is for.
+
+   Consistency between the two frames is worth less than either of them being
+   a photograph. They now render as taken. */
+.people__grid .person__fig { background: var(--indigo-wash); }
+.people__grid .person__fig img { mix-blend-mode: normal; filter: none; }
