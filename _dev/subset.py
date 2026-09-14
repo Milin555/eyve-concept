@@ -30,17 +30,54 @@ def page_text():
 text = page_text()
 print(f'{len(text)} distinct characters in use')
 
+# Cutting characters is only half of it. These are variable fonts, and an axis
+# carries a set of deltas for every glyph it can reach. Measured in the browser
+# across all 21 pages (computed font-style, -weight and -size on every element
+# that owns text), the site asks for:
+#
+#   Newsreader roman    weights 300-700, sizes 11-40px
+#   Newsreader italic   weights 300-350, sizes 16-26px  -- twelve sentences
+#   Archivo             weights 200-700
+#
+# The italic shipped a 300-700 weight axis and a 12-60 optical-size axis to set
+# twelve short lines. Pinning its optical size took it from 94KB to 22KB. The
+# roman genuinely uses its whole weight range, and narrowing its optical size to
+# the range in use saved 2KB, which is not worth pinning a face this visible to
+# a single optical size -- so it keeps both axes.
+AXES = {
+    'newsreader-italic.woff2': {'wght': (300, 350), 'opsz': 20},
+}
+
+def instance(path):
+    """Narrow or pin the variable axes. Returns a temp path, or None."""
+    loc = AXES.get(os.path.basename(path))
+    if not loc:
+        return None
+    from fontTools.ttLib import TTFont
+    from fontTools.varLib import instancer
+    font = TTFont(path)
+    if 'fvar' not in font:
+        return None
+    font = instancer.instantiateVariableFont(font, loc, updateFontNames=False)
+    tmp = path.replace('.woff2', '.axis.woff2')
+    font.flavor = 'woff2'
+    font.save(tmp)
+    return tmp
+
 total_before = total_after = 0
 for f in sorted(glob.glob('assets/font/*.woff2')):
-    if f.endswith('-rupee.woff2'):
-        continue                       # already one glyph
+    if f.endswith(('-rupee.woff2', '.axis.woff2', '.subset.woff2')):
+        continue                       # already one glyph, or our own scratch
     before = os.path.getsize(f)
+    src = instance(f) or f
     out = f.replace('.woff2', '.subset.woff2')
-    cmd = [sys.executable, '-m', 'fontTools.subset', f,
+    cmd = [sys.executable, '-m', 'fontTools.subset', src,
            f'--text={text}', '--flavor=woff2', f'--output-file={out}',
            '--layout-features=kern,liga,calt,tnum,onum,frac,ccmp,locl',
            '--no-hinting', '--desubroutinize', '--name-IDs=1,2,3,4,5,6']
     r = subprocess.run(cmd, capture_output=True, text=True)
+    if src != f:
+        os.remove(src)
     if r.returncode or not os.path.exists(out):
         print(f'  FAILED {os.path.basename(f)}: {r.stderr.strip()[:120]}')
         continue

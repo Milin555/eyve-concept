@@ -177,16 +177,40 @@
   if (reduce || !('IntersectionObserver' in window)) {
     showAll();
   } else {
+    /* .rvimg hides itself with `clip-path: inset(0 0 100% 0)` — a box of zero
+       height. An IntersectionObserver measures the clipped box, so one of these
+       reports ratio 0.000 forever, and the only thing that could ever give it
+       height is the class it can only earn by intersecting. Measured on every
+       page: each .rvimg sat dark until the three-second failsafe below, then
+       the whole page arrived at once. It read as a slow site, and the images
+       were being blamed for it — they had finished downloading inside a second.
+
+       So watch a box that still has height. For a clipped element that is the
+       nearest ancestor which is not itself clipped, and revealing that box
+       reveals everything clipped inside it. */
+    var boxFor = function (el) {
+      var p = el;
+      while (p && p.classList && p.classList.contains('rvimg')) p = p.parentElement;
+      return p || el;
+    };
+    var reveal = function (el) {
+      el.classList.add('is-in');
+      el.addEventListener('transitionend', function () { el.style.transition = 'none'; }, { once: true });
+    };
+    var watch = [];
+    revealables.forEach(function (el) {
+      var box = boxFor(el);
+      if (!box.rvKin) { box.rvKin = []; watch.push(box); }
+      box.rvKin.push(el);
+    });
     var rio = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
         if (!e.isIntersecting) return;
-        var el = e.target;
-        el.classList.add('is-in');
-        rio.unobserve(el);
-        el.addEventListener('transitionend', function () { el.style.transition = 'none'; }, { once: true });
+        (e.target.rvKin || [e.target]).forEach(reveal);
+        rio.unobserve(e.target);
       });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.01 });
-    revealables.forEach(function (el) { rio.observe(el); });
+    watch.forEach(function (el) { rio.observe(el); });
   }
 
   /* Nothing on this site is allowed to stay invisible because a script failed. */
@@ -1264,6 +1288,81 @@
     reelRail.addEventListener('click', function (e) {
       if (moved > 6) { e.preventDefault(); e.stopPropagation(); }
     }, true);
+
+    /* --- The rail rolls on its own --------------------------------------- */
+    /* Five posters sitting still read as a grid of stills. A slow drift says
+       the section is film without playing five videos at once, which would
+       cost more bandwidth than the rest of the page put together.
+
+       It yields to the person immediately: hover, focus, drag, wheel, touch
+       and the open viewer all stop it, because a target that moves while you
+       reach for it is not a usable one. */
+    (function () {
+      var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (!reelCards.length || (mq && mq.matches)) return;
+
+      /* One extra set of cards so the wrap has no seam. The copies are
+         furniture: hidden from assistive tech and unreachable by keyboard,
+         since the originals already carry every reel exactly once. */
+      reelCards.forEach(function (card, i) {
+        var copy = card.cloneNode(true);
+        copy.setAttribute('aria-hidden', 'true');
+        copy.setAttribute('tabindex', '-1');
+        copy.removeAttribute('data-reel');
+        copy.addEventListener('click', function () { openViewer(i, card); });
+        reelRail.appendChild(copy);
+      });
+
+      /* Snap and a continuous drift are two hands on the same axis. */
+      reelRail.style.scrollSnapType = 'none';
+      reelRail.classList.add('is-rolling');
+
+      var setW = 0;
+      var measure = function () {
+        var cs = window.getComputedStyle(reelRail);
+        var gap = parseFloat(cs.columnGap || cs.gap) || 0;
+        var w = 0;
+        for (var i = 0; i < reelCards.length; i++) w += reelCards[i].offsetWidth + gap;
+        setW = w;
+      };
+      measure();
+      window.addEventListener('resize', measure);
+
+      var SPEED = 22;                 /* px a second: slow enough to read a caption */
+      var pos = reelRail.scrollLeft;
+      var last = 0, resumeAt = 0, held = 0;
+
+      /* Wheel, touch and keyboard scrolling all land here. Anything that moves
+         the rail further than our own sub-pixel step was a person, so hand the
+         rail back and wait a beat before taking it again. */
+      reelRail.addEventListener('scroll', function () {
+        if (Math.abs(reelRail.scrollLeft - pos) > 2) {
+          pos = reelRail.scrollLeft;
+          resumeAt = (window.performance ? performance.now() : Date.now()) + 1200;
+        }
+      }, { passive: true });
+
+      var hold = function () { held++; };
+      var release = function () { held = Math.max(0, held - 1); };
+      reelRail.addEventListener('pointerenter', hold);
+      reelRail.addEventListener('pointerleave', release);
+      reelRail.addEventListener('focusin', hold);
+      reelRail.addEventListener('focusout', release);
+
+      var frame = function (t) {
+        window.requestAnimationFrame(frame);
+        if (!last) { last = t; return; }
+        var dt = Math.min(t - last, 64) / 1000;   /* a backgrounded tab must not lurch */
+        last = t;
+        if (held || down || t < resumeAt) { pos = reelRail.scrollLeft; return; }
+        if (viewer && viewer.classList.contains('is-open')) { pos = reelRail.scrollLeft; return; }
+        if (!setW) { measure(); return; }
+        pos += SPEED * dt;
+        if (pos >= setW) pos -= setW;
+        reelRail.scrollLeft = pos;
+      };
+      window.requestAnimationFrame(frame);
+    }());
   }
 
 })();

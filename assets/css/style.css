@@ -4566,3 +4566,37 @@ h1.pdp__title {
 
 /* The homepage hero is the exception that proves the rule: there the title is
    the display, and nothing else on the page comes near it. */
+
+/* --- One commission, not two snapshots -----------------------------------
+   The same photograph of the founder appears on the home page and on about.
+   About graded it; the home page did not, so the woman who fronts the brand
+   arrived in raw phone colour on one page and in a measured monochrome on the
+   other. The frame was also doing her no favours: 16.4% of its height was
+   empty wall above her head, and `aspect-ratio: 4/5` over a 4:5 source meant
+   `object-fit: cover` had nothing to crop away.
+
+   The file is now cropped to the subject (headroom 16.4% -> 8%, centred on
+   her rather than on the frame) and both pages carry one grade. Measured:
+   anita 116.4/61.4 and devam 120.5/69.6 both land on 119.9/63.4. */
+.founder__plate img,
+.people__grid .person:first-child .person__fig img {
+  filter: grayscale(1) contrast(1) brightness(1.03);
+}
+
+/* --- The rolling rail ------------------------------------------------------
+   Once the rail drifts, its ends need to read as "this continues" rather than
+   as "this stops here". A fade at both edges does that, and it only applies
+   when the drift is actually running: with JavaScript off, or under reduced
+   motion, the rail is a plain scroller and a fade over a static edge would be
+   a lie about there being more. The fade is inset by the gutter so the first
+   card still lines up with the shell above it. */
+.reels__rail.is-rolling {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 7rem, #000 calc(100% - 7rem), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 7rem, #000 calc(100% - 7rem), transparent 100%);
+}
+@media (max-width: 760px) {
+  .reels__rail.is-rolling {
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 3rem), transparent 100%);
+            mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 3rem), transparent 100%);
+  }
+}
