@@ -4953,3 +4953,12 @@ h1.pdp__title {
   .fold[open] > .fold__sum { border-bottom-color: transparent; }
   .fold > .fold__sum:focus-visible { outline: 2px solid var(--indigo); outline-offset: 3px; }
 }
+
+/* The count and its +/- sign are one token and must never break apart: at
+   390px "10 ENTRIES" filled the line and left the "+" stranded underneath,
+   which reads as a rendering fault rather than a control. The label is short
+   enough now to hold one line beside it. */
+@media (max-width: 760px) {
+  .fold__hint { white-space: nowrap; flex: none; }
+  .fold > .fold__sum { flex-wrap: nowrap; }
+}
